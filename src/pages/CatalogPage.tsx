@@ -34,8 +34,9 @@ export function CatalogPage() {
                 </Link>
               </div>
 
-              <div className="table-scroll mt-5">
-                <div className="min-w-[640px] overflow-hidden rounded-sm border border-white/10">
+              {/* Tables only from md — on phones cards below */}
+              <div className="mt-5 hidden md:block">
+                <div className="overflow-hidden rounded-sm border border-white/10">
                   <table className="min-w-full text-left text-sm">
                     <thead className="bg-ink-800/80 text-[10px] uppercase tracking-[0.12em] text-steel-400 sm:text-xs">
                       <tr>
@@ -84,12 +85,18 @@ export function CatalogPage() {
                   </table>
                 </div>
               </div>
+
+              <div className="mt-4 grid gap-3 sm:grid-cols-2 md:hidden">
+                {list.map((machine) => (
+                  <MachineCard key={machine.slug} machine={machine} />
+                ))}
+              </div>
             </section>
           );
         })}
       </div>
 
-      <section className="mt-14 sm:mt-16">
+      <section className="mt-14 hidden sm:mt-16 md:block">
         <h2 className="font-display text-2xl font-semibold uppercase text-white sm:text-3xl">
           Все модели
         </h2>

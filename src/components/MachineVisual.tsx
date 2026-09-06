@@ -27,7 +27,7 @@ export function MachineVisual({
 
       <svg
         viewBox="0 0 640 420"
-        className="relative z-10 h-full w-full animate-float"
+        className="relative z-10 h-full w-full motion-safe:lg:animate-float"
         role="img"
         aria-label={label}
       >
@@ -125,16 +125,14 @@ export function MachineVisual({
         <line x1="100" y1="140" x2="540" y2="140" stroke="url(#accentLine)" strokeWidth="1.5" />
       </svg>
 
-      <div className="absolute bottom-3 left-3 right-3 z-20 flex items-end justify-between gap-3 sm:bottom-5 sm:left-5 sm:right-5">
-        <div>
-          <div className="text-[10px] uppercase tracking-[0.2em] text-steel-400 sm:text-xs">
-            CNC Turning Center
-          </div>
-          <div className="font-display text-xl font-semibold uppercase tracking-wide text-white sm:text-2xl">
-            {label}
-          </div>
+      <div className="absolute bottom-3 left-3 right-3 z-20 sm:bottom-5 sm:left-5 sm:right-5">
+        <div className="text-[10px] uppercase tracking-[0.18em] text-steel-400">
+          CNC Turning Center
         </div>
-        <div className="hidden rounded-sm border border-white/15 bg-ink-950/55 px-3 py-1.5 text-[10px] uppercase tracking-[0.14em] text-steel-300 backdrop-blur xs:block sm:text-xs">
+        <div className="font-display text-lg font-semibold uppercase tracking-wide text-white sm:text-2xl">
+          {label}
+        </div>
+        <div className="mt-1 text-[10px] uppercase tracking-[0.12em] text-steel-400 sm:text-xs">
           45 мм · ±0,0075 · 5,5 кВт
         </div>
       </div>

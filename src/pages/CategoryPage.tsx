@@ -9,7 +9,7 @@ export function CategoryPage() {
 
   if (!category) {
     return (
-      <div className="container-page py-16">
+      <div className="container-page section-y">
         <h1 className="section-title">Категория не найдена</h1>
         <Link to="/catalog" className="btn-secondary mt-6 inline-flex">
           В каталог
@@ -31,8 +31,8 @@ export function CategoryPage() {
       <h1 className="mt-3 section-title">{category.title}</h1>
       <p className="section-lead">{category.description}</p>
 
-      <div className="table-scroll mt-8">
-        <div className="min-w-[720px] overflow-hidden rounded-sm border border-white/10">
+      <div className="mt-8 hidden overflow-x-auto md:block">
+        <div className="overflow-hidden rounded-sm border border-white/10">
           <table className="min-w-full text-left text-sm">
             <thead className="bg-ink-800/80 text-[10px] uppercase tracking-[0.12em] text-steel-400 sm:text-xs">
               <tr>
@@ -79,7 +79,7 @@ export function CategoryPage() {
         </div>
       </div>
 
-      <div className="mt-10 grid gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
+      <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {list.map((machine) => (
           <MachineCard key={machine.slug} machine={machine} />
         ))}
