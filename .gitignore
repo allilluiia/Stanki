@@ -27,3 +27,4 @@ dist-ssr
 *.sw?
 
 mail_log.txt
+.github/workflows/
