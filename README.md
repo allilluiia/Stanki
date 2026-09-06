@@ -28,7 +28,15 @@ npm run preview
 
 Замените перед продакшеном. Для SMTP задайте `STANKI_SMTP_*` или положите PHPMailer в `phpmailer/` на хостинге.
 
-## GitHub Pages
+## Превью для заказчика
 
-Workflow `.github/workflows/pages.yml` публикует `dist`.
-Для project pages задайте base репозитория через `VITE_BASE` в workflow (например `/Stanki/`).
+- Репозиторий: https://github.com/allilluiia/Stanki
+- Живой превью: https://allilluiia.github.io/Stanki/
+
+Обновить превью:
+
+```bash
+npm run deploy:pages
+```
+
+Альтернатива: workflow `.github/workflows/pages.yml` (нужен GitHub token со scope `workflow`).
