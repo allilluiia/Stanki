@@ -3,7 +3,7 @@ import { siteConfig } from "@/lib/siteConfig";
 
 export function AboutPage() {
   return (
-    <div className="container-page py-12 sm:py-16">
+    <div className="container-page section-y">
       <h1 className="section-title">О компании {siteConfig.brand}</h1>
       <p className="section-lead">
         {siteConfig.brand} — B2B-поставщик металлообрабатывающего оборудования.

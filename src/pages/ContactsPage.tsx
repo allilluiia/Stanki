@@ -19,18 +19,18 @@ export function ContactsPage() {
   }, [typeParam]);
 
   return (
-    <div className="container-page py-12 sm:py-16">
+    <div className="container-page section-y">
       <h1 className="section-title">Контакты</h1>
       <p className="section-lead">
         Заявки обрабатываем по email. Укажите организацию, задачу и модель — ответим
         коммерческим предложением.
       </p>
 
-      <div className="mt-10 grid gap-8 lg:grid-cols-[0.85fr_1.15fr]">
-        <div className="space-y-4">
+      <div className="mt-10 grid gap-8 lg:grid-cols-[0.85fr_1.15fr] lg:items-start">
+        <div className="space-y-3 sm:space-y-4">
           <a
             href={`mailto:${siteConfig.email}`}
-            className="panel flex items-center gap-4 rounded-sm p-5 transition hover:border-accent/40"
+            className="panel flex min-h-[4.5rem] items-center gap-4 rounded-sm p-5 transition hover:border-accent/40"
           >
             <Mail className="h-5 w-5 text-accent-soft" />
             <div>

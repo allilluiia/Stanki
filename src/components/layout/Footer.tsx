@@ -4,23 +4,23 @@ import { categories } from "@/data/categories";
 
 export function Footer() {
   return (
-    <footer className="mt-20 border-t border-white/10 bg-ink-900/80">
-      <div className="container-page grid gap-10 py-14 sm:grid-cols-2 lg:grid-cols-4">
-        <div>
+    <footer className="mt-8 border-t border-white/10 bg-ink-900/80 sm:mt-12">
+      <div className="container-page grid gap-10 py-12 sm:grid-cols-2 sm:py-14 lg:grid-cols-4 lg:gap-8">
+        <div className="sm:col-span-2 lg:col-span-1">
           <div className="font-display text-3xl font-bold uppercase tracking-wide text-white">
             {siteConfig.brand}
           </div>
-          <p className="mt-3 text-sm leading-relaxed text-steel-300">
+          <p className="mt-3 max-w-sm text-sm leading-relaxed text-steel-300">
             {siteConfig.tagline}. Поставка, пусконаладка, поддержка и запасные
             части.
           </p>
         </div>
 
         <div>
-          <h3 className="text-xs font-semibold uppercase tracking-[0.16em] text-steel-400">
+          <h3 className="text-[11px] font-semibold uppercase tracking-[0.16em] text-steel-400">
             Каталог
           </h3>
-          <ul className="mt-3 space-y-2 text-sm text-steel-200">
+          <ul className="mt-3 space-y-2.5 text-sm text-steel-200">
             {categories.map((c) => (
               <li key={c.id}>
                 <Link className="hover:text-white" to={`/catalog/${c.slug}`}>
@@ -32,10 +32,10 @@ export function Footer() {
         </div>
 
         <div>
-          <h3 className="text-xs font-semibold uppercase tracking-[0.16em] text-steel-400">
+          <h3 className="text-[11px] font-semibold uppercase tracking-[0.16em] text-steel-400">
             Компания
           </h3>
-          <ul className="mt-3 space-y-2 text-sm text-steel-200">
+          <ul className="mt-3 space-y-2.5 text-sm text-steel-200">
             <li>
               <Link className="hover:text-white" to="/service">
                 Сервис
@@ -60,10 +60,10 @@ export function Footer() {
         </div>
 
         <div>
-          <h3 className="text-xs font-semibold uppercase tracking-[0.16em] text-steel-400">
+          <h3 className="text-[11px] font-semibold uppercase tracking-[0.16em] text-steel-400">
             Контакты
           </h3>
-          <ul className="mt-3 space-y-2 text-sm text-steel-200">
+          <ul className="mt-3 space-y-2.5 text-sm text-steel-200">
             <li>
               <a className="hover:text-white" href={`mailto:${siteConfig.email}`}>
                 {siteConfig.email}
@@ -78,7 +78,7 @@ export function Footer() {
           </ul>
         </div>
       </div>
-      <div className="border-t border-white/5 py-5 text-center text-xs text-steel-500">
+      <div className="border-t border-white/5 px-4 py-5 text-center text-xs text-steel-500">
         © {new Date().getFullYear()} {siteConfig.brand}. Официальный дистрибьютор
         SZGH.
       </div>

@@ -65,8 +65,11 @@ export function LeadForm({
     }
 
     try {
+      const base = import.meta.env.BASE_URL.endsWith("/")
+        ? import.meta.env.BASE_URL
+        : `${import.meta.env.BASE_URL}/`;
       const apiUrl = import.meta.env.PROD
-        ? `${import.meta.env.BASE_URL}send-mail.php`.replace(/\/{2,}/g, "/")
+        ? `${base}send-mail.php`
         : "/send-mail.php";
 
       const response = await fetch(apiUrl, {
@@ -106,8 +109,8 @@ export function LeadForm({
   }
 
   return (
-    <div className={cn("panel rounded-sm p-6 sm:p-8", className)}>
-      <h2 className="font-display text-2xl font-semibold uppercase tracking-wide text-white">
+    <div className={cn("panel rounded-sm p-5 sm:p-7 md:p-8", className)}>
+      <h2 className="font-display text-xl font-semibold uppercase tracking-wide text-white sm:text-2xl">
         {title ?? typeLabels[type]}
       </h2>
       <p className="mt-2 text-sm text-steel-300">
@@ -119,7 +122,7 @@ export function LeadForm({
       </p>
 
       <form onSubmit={handleSubmit} className="mt-6 space-y-4">
-        <div className={cn(!compact && "grid gap-4 sm:grid-cols-2")}>
+        <div className={cn("grid gap-4", !compact && "sm:grid-cols-2")}>
           <div>
             <label className="label-field" htmlFor="organization">
               Организация

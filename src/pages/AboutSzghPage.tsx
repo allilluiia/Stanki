@@ -3,7 +3,7 @@ import { siteConfig } from "@/lib/siteConfig";
 
 export function AboutSzghPage() {
   return (
-    <div className="container-page py-12 sm:py-16">
+    <div className="container-page section-y">
       <h1 className="section-title">Официальный дистрибьютор SZGH</h1>
       <p className="section-lead">
         {siteConfig.brand} представляет станки и системы ЧПУ SZGH на территории

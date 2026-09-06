@@ -45,7 +45,7 @@ export function SolutionsPage() {
   const category = categories.find((c) => c.id === taskId);
 
   return (
-    <div className="container-page py-12 sm:py-16">
+    <div className="container-page section-y">
       <h1 className="section-title">Подбор станка</h1>
       <p className="section-lead">
         Выберите тип задачи — покажем подходящие модели SZGH и примем заявку на
@@ -58,9 +58,9 @@ export function SolutionsPage() {
             key={task.id}
             type="button"
             onClick={() => setTaskId(task.id)}
-            className={`panel rounded-sm p-5 text-left transition ${
+            className={`panel min-h-[7.5rem] rounded-sm p-5 text-left transition duration-300 ${
               taskId === task.id
-                ? "border-accent/60 bg-accent/10"
+                ? "border-accent/60 bg-accent/10 shadow-glow"
                 : "hover:border-white/20"
             }`}
           >

@@ -43,7 +43,7 @@ const steps = [
 
 export function ServicePage() {
   return (
-    <div className="container-page py-12 sm:py-16">
+    <div className="container-page section-y">
       <h1 className="section-title">Сервис</h1>
       <p className="section-lead">
         Stanki сопровождает станок после поставки: от подбора до запасных частей.

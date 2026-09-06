@@ -10,7 +10,7 @@ export function DocsPage() {
   const results = useMemo(() => searchMachines(query), [query]);
 
   return (
-    <div className="container-page py-12 sm:py-16">
+    <div className="container-page section-y">
       <h1 className="section-title">Документация</h1>
       <p className="section-lead">
         Найдите модель и получите комплект документов дистрибьютора: паспорт,
