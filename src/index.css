@@ -1,0 +1,57 @@
+@import url("https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-ink-950 text-steel-100 font-sans antialiased;
+    background-image:
+      radial-gradient(ellipse 90% 50% at 50% -10%, rgba(47, 125, 181, 0.12), transparent 50%),
+      linear-gradient(180deg, #07090c 0%, #0c1016 40%, #07090c 100%);
+    min-height: 100vh;
+  }
+
+  ::selection {
+    @apply bg-accent/40 text-white;
+  }
+}
+
+@layer components {
+  .container-page {
+    @apply mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8;
+  }
+
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-sm bg-accent px-5 py-3 text-sm font-semibold tracking-wide text-white transition hover:bg-accent-soft focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 rounded-sm border border-steel-400/40 bg-ink-800/60 px-5 py-3 text-sm font-semibold tracking-wide text-steel-100 transition hover:border-accent/60 hover:bg-ink-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent;
+  }
+
+  .section-title {
+    @apply font-display text-3xl font-semibold uppercase tracking-[0.04em] text-white sm:text-4xl;
+  }
+
+  .section-lead {
+    @apply mt-3 max-w-2xl text-base text-steel-300 sm:text-lg;
+  }
+
+  .panel {
+    @apply border border-white/10 bg-ink-900/70 backdrop-blur-sm;
+  }
+
+  .input-field {
+    @apply w-full rounded-sm border border-white/10 bg-ink-950/80 px-3 py-2.5 text-sm text-steel-50 placeholder:text-steel-400 outline-none transition focus:border-accent/70;
+  }
+
+  .label-field {
+    @apply mb-1.5 block text-xs font-semibold uppercase tracking-[0.12em] text-steel-300;
+  }
+}
