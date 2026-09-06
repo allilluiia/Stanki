@@ -47,7 +47,7 @@
   }
 
   .section-y {
-    @apply py-14 sm:py-16 md:py-20 lg:py-24;
+    @apply py-10 sm:py-14 md:py-20 lg:py-24;
   }
 
   .btn-primary {
@@ -88,10 +88,27 @@
 
   .table-scroll {
     @apply -mx-4 overflow-x-auto overscroll-x-contain px-4 sm:mx-0 sm:px-0;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
   }
 
   .safe-bottom {
     padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  }
+}
+
+/* Prevent iOS zoom + horizontal page bleed */
+@supports (-webkit-touch-callout: none) {
+  .input-field {
+    font-size: 16px;
   }
 }
 

@@ -55,14 +55,14 @@ export function MachinePage() {
               <p className="mt-3 max-w-2xl text-sm leading-relaxed text-steel-300 sm:text-base">
                 {machine.application}
               </p>
-              <div className="mt-6 flex flex-col gap-3 xs:flex-row">
+              <div className="mt-6 flex w-full flex-col gap-3 sm:flex-row">
                 <Link
                   to={`/contacts?type=quote&machine=${machine.slug}`}
-                  className="btn-primary"
+                  className="btn-primary w-full sm:w-auto"
                 >
                   Получить КП
                 </Link>
-                <a href="#lead" className="btn-secondary">
+                <a href="#lead" className="btn-secondary w-full sm:w-auto">
                   Заявка на этой странице
                 </a>
               </div>

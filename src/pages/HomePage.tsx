@@ -21,8 +21,8 @@ export function HomePage() {
 
   return (
     <div className="w-full">
-      {/* Full-bleed viewport hero */}
-      <section className="relative flex min-h-[calc(100svh-3.5rem)] w-full flex-col overflow-hidden border-b border-white/10 sm:min-h-[calc(100svh-4rem)] md:min-h-[calc(100svh-6.5rem)]">
+      {/* Mobile: brand first, natural height. Desktop: full-viewport split */}
+      <section className="relative flex w-full flex-col border-b border-white/10 lg:min-h-[calc(100svh-6.5rem)] lg:overflow-hidden xl:min-h-[calc(100svh-4.25rem)]">
         <div className="pointer-events-none absolute inset-0 bg-hero-glow" />
         <div
           className="pointer-events-none absolute inset-0 opacity-[0.35]"
@@ -34,45 +34,42 @@ export function HomePage() {
         />
 
         <div className="relative grid w-full flex-1 items-center lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
-          <div className="animate-fade-up order-2 w-full px-4 py-8 sm:px-6 sm:py-10 md:px-8 lg:order-1 lg:px-10 lg:py-12 xl:px-14 2xl:px-20">
+          {/* Brand block — first on mobile */}
+          <div className="animate-fade-up w-full px-4 pb-6 pt-8 sm:px-6 sm:pb-8 sm:pt-10 md:px-8 lg:px-10 lg:py-12 xl:px-14 2xl:px-20">
             <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-accent-soft sm:text-xs">
               SZGH CNC
             </p>
-            <h1 className="mt-3 font-display text-[clamp(3.25rem,10vw,8rem)] font-bold uppercase leading-[0.88] tracking-[0.02em] text-white">
+            <h1 className="mt-3 break-words font-display text-[clamp(2.75rem,14vw,8rem)] font-bold uppercase leading-[0.9] tracking-[0.02em] text-white">
               {siteConfig.brand}
             </h1>
-            <p className="mt-4 max-w-xl text-base text-steel-200 sm:mt-5 sm:text-xl md:text-2xl">
+            <p className="mt-4 max-w-xl text-base leading-snug text-steel-200 sm:mt-5 sm:text-xl md:text-2xl">
               {siteConfig.tagline}
             </p>
-            <p className="mt-3 hidden max-w-2xl text-sm leading-relaxed text-steel-400 sm:block md:text-base">
-              Токарные станки · Обрабатывающие центры · Токарно-фрезерные центры ·
-              Системы ЧПУ
+            <p className="mt-3 text-xs leading-relaxed text-steel-400 sm:text-sm md:text-base">
+              Токарные · ОЦ · Токарно-фрезерные · ЧПУ
             </p>
 
-            <div className="mt-7 flex flex-col gap-3 xs:flex-row xs:flex-wrap sm:mt-9">
-              <Link to="/solutions" className="btn-primary">
+            <div className="mt-6 flex w-full flex-col gap-3 sm:mt-8 sm:max-w-md sm:flex-row sm:flex-wrap">
+              <Link to="/solutions" className="btn-primary w-full sm:w-auto">
                 Подобрать станок
                 <ArrowRight className="h-4 w-4" />
               </Link>
-              <Link to="/contacts?type=quote" className="btn-secondary">
+              <Link to="/contacts?type=quote" className="btn-secondary w-full sm:w-auto">
                 Получить КП
               </Link>
             </div>
           </div>
 
-          {/* Full-bleed machine visual to the right edge on desktop */}
-          <div className="animate-fade-in order-1 w-full px-4 pt-6 sm:px-6 md:px-8 lg:order-2 lg:h-full lg:px-0 lg:pt-0">
-            <Link
-              to="/machines/szgh-46j"
-              className="group block h-full lg:min-h-full"
-            >
-              <MachineVisual className="aspect-[16/11] w-full shadow-panel transition duration-500 group-hover:border-accent/40 group-hover:shadow-glow sm:aspect-[5/3] lg:aspect-auto lg:h-full lg:min-h-[min(70svh,560px)] lg:rounded-none lg:border-y-0 lg:border-l lg:border-r-0" />
+          {/* Machine visual — below brand on mobile, full-bleed right on desktop */}
+          <div className="w-full px-4 pb-6 sm:px-6 sm:pb-8 md:px-8 lg:h-full lg:px-0 lg:pb-0 lg:pt-0">
+            <Link to="/machines/szgh-46j" className="group block h-full">
+              <MachineVisual className="aspect-[16/10] w-full max-h-[42svh] shadow-panel transition duration-500 group-hover:border-accent/40 group-hover:shadow-glow sm:aspect-[5/3] sm:max-h-[48svh] lg:aspect-auto lg:max-h-none lg:h-full lg:min-h-[min(70svh,560px)] lg:rounded-none lg:border-y-0 lg:border-l lg:border-r-0" />
             </Link>
           </div>
         </div>
 
         <div className="relative w-full border-t border-white/10 bg-ink-950/40">
-          <div className="flex w-full gap-4 overflow-x-auto px-4 py-3 text-[11px] uppercase tracking-[0.14em] text-steel-300 sm:justify-between sm:gap-6 sm:px-6 sm:py-4 sm:text-xs md:px-8 lg:px-10 xl:px-14 2xl:px-20">
+          <div className="no-scrollbar flex w-full gap-5 overflow-x-auto px-4 py-3 text-[10px] uppercase tracking-[0.14em] text-steel-300 sm:justify-between sm:gap-6 sm:px-6 sm:py-4 sm:text-xs md:px-8 lg:px-10 xl:px-14 2xl:px-20">
             {[
               "Поставка от производителя",
               "Пусконаладка",
@@ -89,8 +86,8 @@ export function HomePage() {
       </section>
 
       <section className="container-page section-y w-full">
-        <div className="flex flex-wrap items-end justify-between gap-4">
-          <div>
+        <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end sm:justify-between sm:gap-4">
+          <div className="min-w-0">
             <h2 className="section-title">Станки SZGH</h2>
             <p className="section-lead">
               Каталог по типу оборудования: сначала задача, затем модель.
@@ -98,7 +95,7 @@ export function HomePage() {
           </div>
           <Link
             to="/catalog"
-            className="text-sm font-semibold text-accent-soft hover:underline"
+            className="shrink-0 text-sm font-semibold text-accent-soft hover:underline"
           >
             Весь каталог →
           </Link>
@@ -166,7 +163,7 @@ export function HomePage() {
         </Link>
       </section>
 
-      <section className="container-page w-full pb-16 sm:pb-20 lg:pb-24">
+      <section className="container-page w-full pb-24 sm:pb-20 lg:pb-24">
         <div className="relative overflow-hidden rounded-sm border border-white/10 bg-gradient-to-br from-ink-800 via-ink-900 to-ink-950 p-6 sm:p-10 md:p-12 lg:p-14">
           <div className="pointer-events-none absolute -right-20 -top-20 h-56 w-56 rounded-full bg-accent/20 blur-3xl" />
           <h2 className="relative font-display text-3xl font-semibold uppercase leading-none text-white sm:text-4xl md:text-5xl">
@@ -176,11 +173,11 @@ export function HomePage() {
             Опишите деталь, материал и серийность — подготовим подбор и коммерческое
             предложение.
           </p>
-          <div className="relative mt-7 flex flex-col gap-3 xs:flex-row xs:flex-wrap">
-            <Link to="/solutions" className="btn-primary">
+          <div className="relative mt-7 flex w-full flex-col gap-3 sm:max-w-md sm:flex-row sm:flex-wrap">
+            <Link to="/solutions" className="btn-primary w-full sm:w-auto">
               Подобрать станок
             </Link>
-            <Link to="/contacts?type=quote" className="btn-secondary">
+            <Link to="/contacts?type=quote" className="btn-secondary w-full sm:w-auto">
               Получить КП
             </Link>
           </div>
