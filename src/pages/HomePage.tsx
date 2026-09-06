@@ -20,9 +20,9 @@ export function HomePage() {
   );
 
   return (
-    <div>
-      {/* Full-viewport hero: brand + one line + CTA + dominant visual */}
-      <section className="relative flex min-h-[calc(100svh-3.5rem)] flex-col overflow-hidden border-b border-white/10 sm:min-h-[calc(100svh-4rem)] md:min-h-[calc(100svh-6.5rem)]">
+    <div className="w-full">
+      {/* Full-bleed viewport hero */}
+      <section className="relative flex min-h-[calc(100svh-3.5rem)] w-full flex-col overflow-hidden border-b border-white/10 sm:min-h-[calc(100svh-4rem)] md:min-h-[calc(100svh-6.5rem)]">
         <div className="pointer-events-none absolute inset-0 bg-hero-glow" />
         <div
           className="pointer-events-none absolute inset-0 opacity-[0.35]"
@@ -33,18 +33,18 @@ export function HomePage() {
           }}
         />
 
-        <div className="container-page relative grid flex-1 items-center gap-8 py-8 sm:gap-10 sm:py-10 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] lg:gap-12 lg:py-8 xl:gap-16">
-          <div className="animate-fade-up order-2 lg:order-1">
+        <div className="relative grid w-full flex-1 items-center lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
+          <div className="animate-fade-up order-2 w-full px-4 py-8 sm:px-6 sm:py-10 md:px-8 lg:order-1 lg:px-10 lg:py-12 xl:px-14 2xl:px-20">
             <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-accent-soft sm:text-xs">
               SZGH CNC
             </p>
-            <h1 className="mt-3 font-display text-[clamp(3.25rem,12vw,7.5rem)] font-bold uppercase leading-[0.88] tracking-[0.02em] text-white">
+            <h1 className="mt-3 font-display text-[clamp(3.25rem,10vw,8rem)] font-bold uppercase leading-[0.88] tracking-[0.02em] text-white">
               {siteConfig.brand}
             </h1>
-            <p className="mt-4 max-w-lg text-base text-steel-200 sm:mt-5 sm:text-xl md:text-2xl">
+            <p className="mt-4 max-w-xl text-base text-steel-200 sm:mt-5 sm:text-xl md:text-2xl">
               {siteConfig.tagline}
             </p>
-            <p className="mt-3 hidden max-w-xl text-sm leading-relaxed text-steel-400 sm:block md:text-base">
+            <p className="mt-3 hidden max-w-2xl text-sm leading-relaxed text-steel-400 sm:block md:text-base">
               Токарные станки · Обрабатывающие центры · Токарно-фрезерные центры ·
               Системы ЧПУ
             </p>
@@ -60,15 +60,19 @@ export function HomePage() {
             </div>
           </div>
 
-          <div className="animate-fade-in order-1 lg:order-2">
-            <Link to="/machines/szgh-46j" className="group block">
-              <MachineVisual className="aspect-[16/11] w-full shadow-panel transition duration-500 group-hover:border-accent/40 group-hover:shadow-glow sm:aspect-[5/3] lg:aspect-[16/11] xl:min-h-[420px]" />
+          {/* Full-bleed machine visual to the right edge on desktop */}
+          <div className="animate-fade-in order-1 w-full px-4 pt-6 sm:px-6 md:px-8 lg:order-2 lg:h-full lg:px-0 lg:pt-0">
+            <Link
+              to="/machines/szgh-46j"
+              className="group block h-full lg:min-h-full"
+            >
+              <MachineVisual className="aspect-[16/11] w-full shadow-panel transition duration-500 group-hover:border-accent/40 group-hover:shadow-glow sm:aspect-[5/3] lg:aspect-auto lg:h-full lg:min-h-[min(70svh,560px)] lg:rounded-none lg:border-y-0 lg:border-l lg:border-r-0" />
             </Link>
           </div>
         </div>
 
-        <div className="relative border-t border-white/10 bg-ink-950/40">
-          <div className="container-page flex gap-4 overflow-x-auto py-3 text-[11px] uppercase tracking-[0.14em] text-steel-300 sm:justify-between sm:gap-6 sm:py-4 sm:text-xs">
+        <div className="relative w-full border-t border-white/10 bg-ink-950/40">
+          <div className="flex w-full gap-4 overflow-x-auto px-4 py-3 text-[11px] uppercase tracking-[0.14em] text-steel-300 sm:justify-between sm:gap-6 sm:px-6 sm:py-4 sm:text-xs md:px-8 lg:px-10 xl:px-14 2xl:px-20">
             {[
               "Поставка от производителя",
               "Пусконаладка",
@@ -84,7 +88,7 @@ export function HomePage() {
         </div>
       </section>
 
-      <section className="container-page section-y">
+      <section className="container-page section-y w-full">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <h2 className="section-title">Станки SZGH</h2>
@@ -100,7 +104,7 @@ export function HomePage() {
           </Link>
         </div>
 
-        <div className="mt-8 grid gap-3 sm:mt-10 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
+        <div className="mt-8 grid gap-3 sm:mt-10 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3 xl:grid-cols-5">
           {categories.map((category, index) => (
             <Link
               key={category.id}
@@ -122,13 +126,13 @@ export function HomePage() {
         </div>
       </section>
 
-      <section className="border-y border-white/10 bg-ink-900/35">
+      <section className="w-full border-y border-white/10 bg-ink-900/35">
         <div className="container-page section-y">
           <h2 className="section-title">Популярные модели</h2>
           <p className="section-lead">
             Ключевые станки линейки — характеристики и запрос КП в один клик.
           </p>
-          <div className="mt-8 grid gap-3 sm:mt-10 sm:grid-cols-2 sm:gap-4 xl:grid-cols-4">
+          <div className="mt-8 grid gap-3 sm:mt-10 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
             {featured.map((machine) => (
               <MachineCard key={machine.slug} machine={machine} />
             ))}
@@ -136,7 +140,7 @@ export function HomePage() {
         </div>
       </section>
 
-      <section className="container-page section-y">
+      <section className="container-page section-y w-full">
         <h2 className="section-title">Сервис полного цикла</h2>
         <p className="section-lead">
           Сопровождаем станок от подбора до запасных частей.
@@ -162,8 +166,8 @@ export function HomePage() {
         </Link>
       </section>
 
-      <section className="container-page pb-16 sm:pb-20 lg:pb-24">
-        <div className="relative overflow-hidden rounded-sm border border-white/10 bg-gradient-to-br from-ink-800 via-ink-900 to-ink-950 p-6 sm:p-10 md:p-12">
+      <section className="container-page w-full pb-16 sm:pb-20 lg:pb-24">
+        <div className="relative overflow-hidden rounded-sm border border-white/10 bg-gradient-to-br from-ink-800 via-ink-900 to-ink-950 p-6 sm:p-10 md:p-12 lg:p-14">
           <div className="pointer-events-none absolute -right-20 -top-20 h-56 w-56 rounded-full bg-accent/20 blur-3xl" />
           <h2 className="relative font-display text-3xl font-semibold uppercase leading-none text-white sm:text-4xl md:text-5xl">
             Нужен станок под задачу?

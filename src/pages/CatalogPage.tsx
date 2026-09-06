@@ -93,7 +93,7 @@ export function CatalogPage() {
         <h2 className="font-display text-2xl font-semibold uppercase text-white sm:text-3xl">
           Все модели
         </h2>
-        <div className="mt-6 grid gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
+        <div className="mt-6 grid gap-3 sm:grid-cols-2 sm:gap-4 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
           {machines.map((machine) => (
             <MachineCard key={machine.slug} machine={machine} />
           ))}

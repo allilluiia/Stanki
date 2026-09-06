@@ -5,9 +5,9 @@ import { MobileCtaBar } from "@/components/MobileCtaBar";
 
 export function Layout() {
   return (
-    <div className="flex min-h-svh flex-col">
+    <div className="flex min-h-svh w-full flex-col">
       <Header />
-      <main className="flex-1 pb-20 lg:pb-0">
+      <main className="w-full flex-1 pb-20 lg:pb-0">
         <Outlet />
       </main>
       <Footer />

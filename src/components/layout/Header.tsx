@@ -17,8 +17,8 @@ export function Header() {
   }, [open]);
 
   return (
-    <header className="sticky top-0 z-50 border-b border-white/10 bg-ink-950/90 backdrop-blur-xl">
-      <div className="container-page">
+    <header className="sticky top-0 z-50 w-full border-b border-white/10 bg-ink-950/90 backdrop-blur-xl">
+      <div className="container-page w-full">
         <div className="hidden h-9 items-center justify-between gap-4 border-b border-white/5 text-xs text-steel-300 md:flex">
           <div className="flex items-center gap-5">
             <a
