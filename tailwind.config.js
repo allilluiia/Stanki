@@ -12,76 +12,110 @@ export default {
     },
     extend: {
       colors: {
-        ink: {
-          950: "#07090c",
-          900: "#0c1016",
-          800: "#141b24",
-          700: "#1c2633",
-          600: "#2a3748",
+        canvas: {
+          DEFAULT: "#F2F3F1",
+          soft: "#DEE3E4",
+          deep: "#D4DBDD",
         },
-        steel: {
-          50: "#f2f6fa",
-          100: "#dde7f0",
-          200: "#b8c9db",
-          300: "#8fa8c2",
-          400: "#6b87a6",
-          500: "#4f6d8c",
-          600: "#3d5670",
-          700: "#2f4358",
+        surface: {
+          DEFAULT: "#FAFAF8",
+          muted: "#FAFAF8",
+        },
+        ink: {
+          DEFAULT: "#172027",
+          soft: "#172027",
+          muted: "#657079",
+          faint: "#8A949C",
+        },
+        line: {
+          DEFAULT: "#CCD3D6",
+          strong: "#B5BFC3",
+          soft: "#E0E5E7",
+        },
+        stage: {
+          DEFAULT: "#BECBD1",
+          soft: "#CDD7DC",
         },
         accent: {
-          DEFAULT: "#2f7db5",
-          soft: "#3d93cf",
-          muted: "#1e4f72",
+          DEFAULT: "#718B98",
+          soft: "#8AA1AC",
+          hover: "#607D8B",
+          muted: "#D5DEE2",
+          wash: "#E8EDF0",
+        },
+        brand: {
+          DEFAULT: "#172229",
+          soft: "#243038",
+          wash: "#E8EDF0",
+        },
+        logo: {
+          DEFAULT: "#C83A2D",
+        },
+        mark: {
+          DEFAULT: "#172229",
+          soft: "#243038",
+          wash: "#E8EDF0",
+        },
+        steel: {
+          50: "#172027",
+          100: "#172027",
+          200: "#243038",
+          300: "#657079",
+          400: "#8A949C",
+          500: "#B5BFC3",
+          600: "#CCD3D6",
+          700: "#E0E5E7",
+        },
+        signal: {
+          DEFAULT: "#718B98",
+          soft: "#607D8B",
         },
         brass: {
-          DEFAULT: "#b08a4a",
-          soft: "#c9a56a",
+          DEFAULT: "#718B98",
+          soft: "#607D8B",
         },
       },
       fontFamily: {
-        display: ['"Barlow Condensed"', "system-ui", "sans-serif"],
-        sans: ['"Source Sans 3"', "system-ui", "sans-serif"],
+        display: ['"Sora"', "system-ui", "sans-serif"],
+        sans: ['"IBM Plex Sans"', "system-ui", "sans-serif"],
       },
-      backgroundImage: {
-        "metal-grid":
-          "linear-gradient(rgba(47,125,181,0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(47,125,181,0.06) 1px, transparent 1px)",
-        "hero-glow":
-          "radial-gradient(ellipse 70% 55% at 78% 42%, rgba(47,125,181,0.28), transparent 58%), radial-gradient(ellipse 45% 35% at 18% 78%, rgba(176,138,74,0.1), transparent 50%)",
-        "machine-sheen":
-          "linear-gradient(135deg, rgba(255,255,255,0.08) 0%, transparent 35%, transparent 65%, rgba(47,125,181,0.12) 100%)",
+      maxWidth: {
+        /* Unified content rail — 1280 within 1200–1320 band */
+        page: "1280px",
+      },
+      spacing: {
+        18: "4.5rem",
+        22: "5.5rem",
+        30: "7.5rem",
       },
       boxShadow: {
-        panel: "0 24px 60px rgba(0,0,0,0.45)",
-        glow: "0 0 40px rgba(47,125,181,0.25)",
+        frame: "8px 8px 0 0 rgba(23, 32, 39, 0.08)",
+        lift: "0 12px 32px rgba(23, 32, 39, 0.08)",
+      },
+      transitionDuration: {
+        150: "150ms",
+        180: "180ms",
+        220: "220ms",
+        280: "280ms",
+        320: "320ms",
+        400: "400ms",
+      },
+      transitionTimingFunction: {
+        out: "cubic-bezier(0.22, 1, 0.36, 1)",
+        soft: "cubic-bezier(0.33, 1, 0.68, 1)",
       },
       animation: {
-        "fade-up": "fadeUp 0.8s cubic-bezier(0.22,1,0.36,1) both",
-        "fade-in": "fadeIn 0.7s ease-out both",
-        float: "float 7s ease-in-out infinite",
-        "scan-line": "scanLine 8s linear infinite",
-        "pulse-soft": "pulseSoft 3.5s ease-in-out infinite",
+        "fade-up": "fadeUp 0.55s cubic-bezier(0.22,1,0.36,1) both",
+        "fade-in": "fadeIn 0.35s cubic-bezier(0.22,1,0.36,1) both",
       },
       keyframes: {
         fadeUp: {
-          "0%": { opacity: "0", transform: "translateY(22px)" },
-          "100%": { opacity: "1", transform: "translateY(0)" },
+          "0%": { opacity: "0", transform: "translate3d(0, 12px, 0)" },
+          "100%": { opacity: "1", transform: "translate3d(0, 0, 0)" },
         },
         fadeIn: {
           "0%": { opacity: "0" },
           "100%": { opacity: "1" },
-        },
-        float: {
-          "0%, 100%": { transform: "translateY(0)" },
-          "50%": { transform: "translateY(-10px)" },
-        },
-        scanLine: {
-          "0%": { transform: "translateY(-20%)" },
-          "100%": { transform: "translateY(120%)" },
-        },
-        pulseSoft: {
-          "0%, 100%": { opacity: "0.45" },
-          "50%": { opacity: "0.9" },
         },
       },
     },

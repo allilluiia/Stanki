@@ -1,40 +1,70 @@
 import { Link } from "react-router-dom";
 import type { Machine } from "@/data/types";
 import { StatusBadge } from "@/components/StatusBadge";
+import { MachineVisual } from "@/components/MachineVisual";
+import { cn } from "@/lib/utils";
 
-export function MachineCard({ machine }: { machine: Machine }) {
+export function MachineCard({
+  machine,
+  dense = false,
+}: {
+  machine: Machine;
+  dense?: boolean;
+}) {
   return (
-    <Link
-      to={`/machines/${machine.slug}`}
-      className="panel group flex h-full flex-col rounded-sm p-4 transition duration-300 hover:-translate-y-1 hover:border-accent/40 hover:shadow-panel sm:p-5"
+    <article
+      className={cn(
+        "group flex h-full flex-col border-line bg-surface transition-[transform,background-color,box-shadow] duration-220 ease-out will-change-transform",
+        dense
+          ? "border-b border-r hover:bg-canvas-soft/50"
+          : "border shadow-frame hover:-translate-y-px hover:border-accent/40",
+        !dense &&
+          "[clip-path:polygon(0_0,calc(100%-18px)_0,100%_18px,100%_100%,18px_100%,0_calc(100%-18px))]",
+      )}
     >
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <div className="text-[10px] uppercase tracking-[0.16em] text-steel-400 sm:text-xs">
-            {machine.brand}
+      <Link to={`/machines/${machine.slug}`} className="flex flex-1 flex-col">
+        <div className="relative overflow-hidden border-b border-line">
+          <div className="absolute left-3 top-3 z-10 flex gap-2">
+            <span className="bg-brand px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-surface-muted">
+              {machine.brand}
+            </span>
+            <StatusBadge status={machine.availability} />
           </div>
-          <h3 className="mt-1 truncate font-display text-xl font-semibold uppercase tracking-wide text-white transition group-hover:text-accent-soft sm:text-2xl">
+          <MachineVisual
+            label={machine.model}
+            categoryId={machine.categoryId}
+            media={machine.media}
+            className="aspect-[4/3] border-0"
+          />
+        </div>
+        <div className={cn("flex flex-1 flex-col", dense ? "p-4" : "p-5 sm:p-6")}>
+          <h3 className="font-display text-lg font-semibold uppercase tracking-tight text-ink transition-colors duration-180 ease-out group-hover:text-accent sm:text-xl">
             {machine.model}
           </h3>
+          <p className="mt-2 text-sm leading-snug text-ink-muted">{machine.name}</p>
+          {machine.shortDescription && !dense ? (
+            <p className="mt-4 flex-1 text-sm leading-relaxed text-ink-muted">
+              {machine.shortDescription}
+            </p>
+          ) : (
+            <div className="flex-1" />
+          )}
         </div>
-        <StatusBadge status={machine.availability} />
+      </Link>
+      <div className="grid grid-cols-2 border-t border-line">
+        <Link
+          to={`/contacts?type=quote&machine=${machine.slug}`}
+          className="inline-flex min-h-11 items-center justify-center bg-brand px-2 text-center text-[11px] font-semibold uppercase tracking-[0.1em] text-surface-muted transition-colors duration-180 ease-out hover:bg-accent-hover"
+        >
+          Запросить КП
+        </Link>
+        <Link
+          to={`/machines/${machine.slug}`}
+          className="inline-flex min-h-11 items-center justify-center bg-surface-muted px-2 text-center text-[11px] font-semibold uppercase tracking-[0.1em] text-ink transition-colors duration-180 ease-out hover:bg-brand hover:text-surface-muted"
+        >
+          Подробнее
+        </Link>
       </div>
-      <p className="mt-3 flex-1 text-sm leading-relaxed text-steel-300">
-        {machine.shortDescription}
-      </p>
-      <div className="mt-4 grid grid-cols-2 gap-3 border-t border-white/10 pt-4">
-        {machine.heroMetrics.slice(0, 2).map((m) => (
-          <div key={m.label}>
-            <div className="text-sm font-semibold text-white sm:text-base">
-              {m.value}
-              {m.unit ? ` ${m.unit}` : ""}
-            </div>
-            <div className="mt-0.5 text-[10px] uppercase tracking-[0.1em] text-steel-400 sm:text-[11px]">
-              {m.label}
-            </div>
-          </div>
-        ))}
-      </div>
-    </Link>
+    </article>
   );
 }

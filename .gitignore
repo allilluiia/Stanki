@@ -27,4 +27,6 @@ dist-ssr
 *.sw?
 
 mail_log.txt
-.github/workflows/
+__MACOSX
+*.pem
+*.key.github/workflows/

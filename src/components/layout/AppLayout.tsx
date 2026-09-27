@@ -7,9 +7,12 @@ import { MobileUiProvider } from "@/contexts/MobileUiContext";
 export function Layout() {
   return (
     <MobileUiProvider>
-      <div className="flex min-h-dvh w-full max-w-[100vw] flex-col overflow-x-clip">
+      <div className="flex min-h-dvh w-full max-w-full flex-col overflow-x-clip pb-[calc(4.75rem+env(safe-area-inset-bottom,0px))] lg:pb-0">
         <Header />
-        <main className="w-full min-w-0 flex-1 pb-[4.75rem] lg:pb-0">
+        <main
+          id="main-content"
+          className="page-enter w-full min-w-0 flex-1"
+        >
           <Outlet />
         </main>
         <Footer />

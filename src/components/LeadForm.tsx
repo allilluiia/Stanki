@@ -1,5 +1,6 @@
-import { useState, type FormEvent } from "react";
-import { siteConfig } from "@/lib/siteConfig";
+import { useId, useState, type FormEvent } from "react";
+import { Link } from "react-router-dom";
+import { contactFallbackText, hasEmail, hasPhone, siteConfig } from "@/lib/siteConfig";
 import { cn } from "@/lib/utils";
 
 export type LeadType = "quote" | "select" | "contact";
@@ -8,6 +9,9 @@ interface LeadFormProps {
   type?: LeadType;
   machineSlug?: string;
   machineModel?: string;
+  /** Free-form context (e.g. selected task / category title) — not a machine model */
+  context?: string;
+  categoryId?: string;
   title?: string;
   className?: string;
   compact?: boolean;
@@ -19,32 +23,84 @@ const typeLabels: Record<LeadType, string> = {
   contact: "Сообщение с сайта",
 };
 
+const USER_ERROR =
+  "Не удалось отправить заявку. Попробуйте ещё раз или свяжитесь с нами по email.";
+
+function buildDefaultMessage(machineModel?: string, context?: string) {
+  if (machineModel) {
+    return `Интересует модель ${machineModel}. Прошу подготовить коммерческое предложение.`;
+  }
+  if (context) {
+    return `Интересует направление: ${context}. Прошу помочь с подбором оборудования.`;
+  }
+  return "";
+}
+
+function resolveMailUrl(): string | null {
+  const envUrl = import.meta.env.VITE_MAIL_URL as string | undefined;
+  if (envUrl && envUrl.trim()) return envUrl.trim();
+
+  if (siteConfig.form.demoMode) return null;
+
+  if (import.meta.env.PROD) {
+    const base = import.meta.env.BASE_URL.endsWith("/")
+      ? import.meta.env.BASE_URL
+      : `${import.meta.env.BASE_URL}/`;
+    return `${base}send-mail.php`;
+  }
+
+  return "/send-mail.php";
+}
+
 export function LeadForm({
   type = "contact",
   machineSlug,
   machineModel,
+  context,
+  categoryId,
   title,
   className,
   compact = false,
 }: LeadFormProps) {
+  const uid = useId();
   const [organization, setOrganization] = useState("");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
-  const [message, setMessage] = useState(
-    machineModel
-      ? `Интересует модель ${machineModel}. Прошу подготовить коммерческое предложение.`
-      : "",
+  const [message, setMessage] = useState(() =>
+    buildDefaultMessage(machineModel, context),
   );
+  const [consent, setConsent] = useState(false);
+  const [honeypot, setHoneypot] = useState("");
+  const [startedAt] = useState(() => Date.now());
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">(
     "idle",
   );
   const [errorText, setErrorText] = useState("");
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+
+  function validate() {
+    const next: Record<string, string> = {};
+    if (!name.trim()) next.name = "Укажите имя";
+    if (!email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+      next.email = "Укажите корректный email";
+    }
+    if (!message.trim()) next.message = "Укажите сообщение";
+    if (!consent) next.consent = "Нужно согласие на обработку персональных данных";
+    setFieldErrors(next);
+    return Object.keys(next).length === 0;
+  }
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
-    setStatus("loading");
     setErrorText("");
+    if (!validate()) {
+      setStatus("error");
+      setErrorText("Проверьте обязательные поля формы.");
+      return;
+    }
+
+    setStatus("loading");
 
     const payload = {
       organization: organization.trim().slice(0, 200),
@@ -53,25 +109,31 @@ export function LeadForm({
       phone: phone.trim().slice(0, 24),
       message: message.trim().slice(0, 12000),
       formType: type,
-      machineSlug: machineSlug ?? "",
-      machineModel: machineModel ?? "",
+      machineSlug: (machineSlug ?? "").slice(0, 80),
+      machineModel: (machineModel ?? "").slice(0, 120),
+      context: (context ?? "").slice(0, 200),
+      categoryId: (categoryId ?? "").slice(0, 40),
+      website: honeypot,
+      formStartedAt: startedAt,
+      consent: true,
     };
 
-    const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(payload.email);
-    if (!payload.name || !payload.email || !emailOk || !payload.message) {
-      setStatus("error");
-      setErrorText("Укажите имя, корректный email и текст сообщения.");
+    const apiUrl = resolveMailUrl();
+
+    if (!apiUrl) {
+      // Demo / preview without backend
+      await new Promise((r) => setTimeout(r, 400));
+      setStatus("success");
+      setOrganization("");
+      setName("");
+      setEmail("");
+      setPhone("");
+      setMessage("");
+      setConsent(false);
       return;
     }
 
     try {
-      const base = import.meta.env.BASE_URL.endsWith("/")
-        ? import.meta.env.BASE_URL
-        : `${import.meta.env.BASE_URL}/`;
-      const apiUrl = import.meta.env.PROD
-        ? `${base}send-mail.php`
-        : "/send-mail.php";
-
       const response = await fetch(apiUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -83,13 +145,11 @@ export function LeadForm({
       try {
         result = JSON.parse(raw) as { success?: boolean; message?: string };
       } catch {
-        throw new Error(
-          `Сервис отправки временно недоступен. Напишите на ${siteConfig.email}`,
-        );
+        throw new Error(USER_ERROR);
       }
 
-      if (!result.success) {
-        throw new Error(result.message || "Ошибка отправки");
+      if (!response.ok || !result.success) {
+        throw new Error(USER_ERROR);
       }
 
       setStatus("success");
@@ -98,109 +158,201 @@ export function LeadForm({
       setEmail("");
       setPhone("");
       setMessage("");
-    } catch (err) {
+      setConsent(false);
+    } catch {
       setStatus("error");
-      setErrorText(
-        err instanceof Error
-          ? err.message
-          : `Не удалось отправить. Напишите на ${siteConfig.email}`,
-      );
+      setErrorText(USER_ERROR);
     }
   }
 
+  if (status === "success") {
+    return (
+      <div className={cn("panel rounded-none p-5 sm:p-7 md:p-8", className)}>
+        <h2 className="font-display text-xl font-semibold uppercase tracking-wide text-ink sm:text-2xl">
+          Заявка отправлена
+        </h2>
+        <p className="mt-3 text-sm leading-relaxed text-ink-muted" role="status" aria-live="polite">
+          {siteConfig.form.demoMode
+            ? "Демо-режим: заявка не отправлялась на сервер. В production форма будет работать через настроенный почтовый endpoint."
+            : "Спасибо. Мы получили вашу заявку и ответим на указанный email."}
+        </p>
+        <button
+          type="button"
+          className="btn-secondary mt-6"
+          onClick={() => setStatus("idle")}
+        >
+          Отправить ещё одну заявку
+        </button>
+      </div>
+    );
+  }
+
   return (
-    <div className={cn("panel rounded-sm p-5 sm:p-7 md:p-8", className)}>
-      <h2 className="font-display text-xl font-semibold uppercase tracking-wide text-white sm:text-2xl">
+    <div className={cn("panel rounded-none p-6 sm:p-8 md:p-9", className)}>
+      <h2 className="font-display text-xl font-semibold uppercase tracking-wide text-ink sm:text-2xl">
         {title ?? typeLabels[type]}
       </h2>
-      <p className="mt-2 text-sm text-steel-300">
-        Заявка уходит на {siteConfig.email}. Или позвоните{" "}
-        <a className="text-accent-soft hover:underline" href={siteConfig.phoneHref}>
-          {siteConfig.phone}
-        </a>
-        .
-      </p>
+      <p className="mt-2.5 text-sm leading-relaxed text-ink-muted">{contactFallbackText()}</p>
+      {siteConfig.form.demoMode ? (
+        <p className="mt-2 text-xs text-accent">
+          Демо-превью: отправка на почтовый сервер отключена.
+        </p>
+      ) : null}
 
-      <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+      <form onSubmit={handleSubmit} className="mt-7 space-y-5" noValidate>
+        {/* Honeypot */}
+        <div className="absolute -left-[9999px] opacity-0" aria-hidden="true">
+          <label htmlFor={`${uid}-website`}>Website</label>
+          <input
+            id={`${uid}-website`}
+            tabIndex={-1}
+            autoComplete="off"
+            value={honeypot}
+            onChange={(e) => setHoneypot(e.target.value)}
+          />
+        </div>
+
         <div className={cn("grid gap-4", !compact && "sm:grid-cols-2")}>
           <div>
-            <label className="label-field" htmlFor="organization">
+            <label className="label-field" htmlFor={`${uid}-org`}>
               Организация
             </label>
             <input
-              id="organization"
+              id={`${uid}-org`}
               className="input-field"
+              autoComplete="organization"
               value={organization}
               onChange={(e) => setOrganization(e.target.value)}
-              placeholder="ООО «Пример»"
             />
           </div>
           <div>
-            <label className="label-field" htmlFor="name">
+            <label className="label-field" htmlFor={`${uid}-name`}>
               Фамилия и имя *
             </label>
             <input
-              id="name"
+              id={`${uid}-name`}
               className="input-field"
+              autoComplete="name"
               required
+              aria-invalid={Boolean(fieldErrors.name)}
+              aria-describedby={fieldErrors.name ? `${uid}-name-err` : undefined}
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="Иванов Иван"
             />
+            {fieldErrors.name ? (
+              <p id={`${uid}-name-err`} className="mt-1 text-xs text-red-700">
+                {fieldErrors.name}
+              </p>
+            ) : null}
           </div>
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
-            <label className="label-field" htmlFor="email">
+            <label className="label-field" htmlFor={`${uid}-email`}>
               Email *
             </label>
             <input
-              id="email"
+              id={`${uid}-email`}
               type="email"
+              inputMode="email"
               className="input-field"
+              autoComplete="email"
               required
+              aria-invalid={Boolean(fieldErrors.email)}
+              aria-describedby={fieldErrors.email ? `${uid}-email-err` : undefined}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="name@company.ru"
             />
+            {fieldErrors.email ? (
+              <p id={`${uid}-email-err`} className="mt-1 text-xs text-red-700">
+                {fieldErrors.email}
+              </p>
+            ) : null}
           </div>
           <div>
-            <label className="label-field" htmlFor="phone">
+            <label className="label-field" htmlFor={`${uid}-phone`}>
               Телефон
             </label>
             <input
-              id="phone"
+              id={`${uid}-phone`}
+              type="tel"
+              inputMode="tel"
               className="input-field"
+              autoComplete="tel"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
-              placeholder="+7…"
             />
           </div>
         </div>
 
         <div>
-          <label className="label-field" htmlFor="message">
+          <label className="label-field" htmlFor={`${uid}-message`}>
             Сообщение *
           </label>
           <textarea
-            id="message"
+            id={`${uid}-message`}
             className="input-field min-h-[120px] resize-y"
             required
+            aria-invalid={Boolean(fieldErrors.message)}
+            aria-describedby={fieldErrors.message ? `${uid}-message-err` : undefined}
             value={message}
             onChange={(e) => setMessage(e.target.value)}
-            placeholder="Модель, задача, сроки…"
+            placeholder="Модель, задача, материал, серийность…"
           />
+          {fieldErrors.message ? (
+            <p id={`${uid}-message-err`} className="mt-1 text-xs text-red-700">
+              {fieldErrors.message}
+            </p>
+          ) : null}
+          <p className="mt-2 text-xs text-ink-faint">
+            Чертёж или ТЗ можно прислать ответом на письмо после заявки
+            {hasEmail() ? ` (${siteConfig.company.email})` : ""}.
+          </p>
         </div>
 
-        {status === "success" ? (
-          <p className="rounded-sm border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-sm text-emerald-300">
-            Заявка отправлена. Мы свяжемся с вами по email.
-          </p>
-        ) : null}
+        <div>
+          <label className="flex items-start gap-3 text-sm text-ink-muted">
+            <input
+              type="checkbox"
+              className="mt-1 h-4 w-4 accent-accent"
+              checked={consent}
+              onChange={(e) => setConsent(e.target.checked)}
+              aria-invalid={Boolean(fieldErrors.consent)}
+            />
+            <span>
+              Согласен на обработку персональных данных.{" "}
+              <Link to="/privacy" className="text-mark hover:underline">
+                Политика конфиденциальности
+              </Link>
+            </span>
+          </label>
+          {fieldErrors.consent ? (
+            <p className="mt-1 text-xs text-red-700">{fieldErrors.consent}</p>
+          ) : null}
+        </div>
+
         {status === "error" ? (
-          <p className="rounded-sm border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-300">
+          <p className="rounded-none border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-700" role="alert" aria-live="assertive">
             {errorText}
+            {hasPhone() || hasEmail() ? (
+              <>
+                {" "}
+                {hasEmail() ? (
+                  <a className="underline" href={`mailto:${siteConfig.company.email}`}>
+                    {siteConfig.company.email}
+                  </a>
+                ) : null}
+                {hasPhone() ? (
+                  <>
+                    {hasEmail() ? " / " : null}
+                    <a className="underline" href={siteConfig.company.phoneHref}>
+                      {siteConfig.company.phone}
+                    </a>
+                  </>
+                ) : null}
+              </>
+            ) : null}
           </p>
         ) : null}
 

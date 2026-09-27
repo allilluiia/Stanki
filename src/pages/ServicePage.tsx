@@ -1,86 +1,109 @@
 import { Link } from "react-router-dom";
 import {
   ClipboardList,
-  Presentation,
   Settings,
   GraduationCap,
   Wrench,
   PackageSearch,
+  FileText,
+  Truck,
 } from "lucide-react";
-
-const steps = [
-  {
-    title: "Подбор оборудования",
-    text: "Анализируем деталь, материал, серийность и требования по точности.",
-    icon: ClipboardList,
-  },
-  {
-    title: "Демонстрация",
-    text: "Показываем возможности станка и типовые режимы обработки.",
-    icon: Presentation,
-  },
-  {
-    title: "Ввод в эксплуатацию",
-    text: "ПНР на площадке заказчика, проверка точности и режимов.",
-    icon: Settings,
-  },
-  {
-    title: "Обучение",
-    text: "Операторы и технологи получают практику на конкретной модели.",
-    icon: GraduationCap,
-  },
-  {
-    title: "Обслуживание и ремонт",
-    text: "Плановое ТО, диагностика и восстановление работоспособности.",
-    icon: Wrench,
-  },
-  {
-    title: "Запасные части",
-    text: "Склад ЗИП и поставка узлов под гарантию и постгарантию.",
-    icon: PackageSearch,
-  },
-];
+import { siteConfig } from "@/lib/siteConfig";
 
 export function ServicePage() {
+  const { claims } = siteConfig;
+
+  const steps = [
+    claims.machineSelection && {
+      title: "Подбор оборудования",
+      text: "Анализируем задачу производства и подбираем модели из каталога SZGH.",
+      icon: ClipboardList,
+    },
+    claims.quoteRequests && {
+      title: "Коммерческое предложение",
+      text: "Готовим КП по выбранной модели и комплектации.",
+      icon: FileText,
+    },
+    claims.logistics && {
+      title: "Поставка",
+      text: "Организуем поставку оборудования на площадку заказчика.",
+      icon: Truck,
+    },
+    claims.commissioning && {
+      title: "Ввод в эксплуатацию",
+      text: "Пусконаладка на площадке заказчика.",
+      icon: Settings,
+    },
+    claims.training && {
+      title: "Обучение",
+      text: "Обучение операторов и технологов на конкретной модели.",
+      icon: GraduationCap,
+    },
+    claims.warrantyService && {
+      title: "Обслуживание",
+      text: "Гарантийный и постгарантийный сервис.",
+      icon: Wrench,
+    },
+    claims.spareParts && {
+      title: "Запасные части",
+      text: "Поставка узлов и расходников.",
+      icon: PackageSearch,
+    },
+    claims.documentationOnRequest && {
+      title: "Документация",
+      text: "Datasheet, руководства и схемы — по запросу.",
+      icon: FileText,
+    },
+  ].filter(Boolean) as {
+    title: string;
+    text: string;
+    icon: typeof ClipboardList;
+  }[];
+
   return (
-    <div className="container-page section-y">
+    <div className="container-page page-start">
       <h1 className="section-title">Сервис</h1>
       <p className="section-lead">
-        Stanki сопровождает станок после поставки: от подбора до запасных частей.
-        Для китайских станков это критично — мы строим сервис как часть продажи.
+        Сопровождение сделки по станку SZGH. Ниже — только подтверждённые этапы
+        работы. Дополнительные услуги согласуются в договоре.
       </p>
 
-      <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {steps.map((step, index) => (
-          <div key={step.title} className="panel rounded-sm p-6">
-            <div className="flex items-center justify-between">
-              <step.icon className="h-6 w-6 text-accent-soft" />
-              <span className="text-xs uppercase tracking-[0.16em] text-steel-500">
-                0{index + 1}
-              </span>
+      {steps.length > 0 ? (
+        <div className="stack-after-lead grid gap-cards sm:grid-cols-2 lg:grid-cols-3">
+          {steps.map((step, index) => (
+            <div key={step.title} className="panel rounded-none p-6">
+              <div className="flex items-center justify-between">
+                <step.icon className="h-6 w-6 text-mark" />
+                <span className="text-xs uppercase tracking-[0.16em] text-ink-faint">
+                  0{index + 1}
+                </span>
+              </div>
+              <h2 className="mt-4 heading-2">
+                {step.title}
+              </h2>
+              <p className="mt-2 text-sm leading-relaxed text-ink-muted">
+                {step.text}
+              </p>
             </div>
-            <h2 className="mt-4 font-display text-2xl font-semibold uppercase tracking-wide text-white">
-              {step.title}
-            </h2>
-            <p className="mt-2 text-sm leading-relaxed text-steel-300">
-              {step.text}
-            </p>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      ) : (
+        <p className="mt-8 text-sm text-ink-muted">
+          Оставьте заявку — состав услуг согласуем в коммерческом предложении.
+        </p>
+      )}
 
-      <div className="panel mt-12 rounded-sm p-8">
-        <h2 className="font-display text-3xl font-semibold uppercase text-white">
-          Гарантия и поддержка
+      <div className="panel mt-12 rounded-none p-6 sm:p-8">
+        <h2 className="heading-2">
+          Заявка в сервис
         </h2>
-        <p className="mt-3 max-w-3xl text-steel-300">
-          Гарантийные обязательства фиксируются в договоре поставки. Техническая
-          поддержка — преимущественно по email с приложением фото/видео и логов
-          ЧПУ; срочные вопросы — по телефону.
+        <p className="mt-3 max-w-3xl text-sm leading-relaxed text-ink-muted sm:text-base">
+          Опишите модель, серийный номер (если есть) и задачу — ответим на
+          указанный в форме email.
         </p>
         <div className="mt-6 flex flex-wrap gap-3">
           <Link to="/contacts?type=contact" className="btn-primary">
-            Заявка в сервис
+            Оставить заявку
           </Link>
           <Link to="/docs" className="btn-secondary">
             Документация

@@ -2,88 +2,82 @@ import { Link } from "react-router-dom";
 import { siteConfig } from "@/lib/siteConfig";
 
 export function AboutSzghPage() {
+  const { company } = siteConfig;
+
   return (
-    <div className="container-page section-y">
-      <h1 className="section-title">Официальный дистрибьютор SZGH</h1>
+    <div className="container-page page-start">
+      <h1 className="section-title">О SZGH</h1>
       <p className="section-lead">
-        {siteConfig.brand} представляет станки и системы ЧПУ SZGH на территории
-        дистрибуции с полным циклом поставки и сервиса.
+        SZGH — производитель станков с ЧПУ и управляющей электроники.{" "}
+        {siteConfig.brand} представляет линейку оборудования в каталоге и принимает
+        заявки на коммерческие предложения.
       </p>
 
-      <div className="mt-10 grid gap-6 lg:grid-cols-2">
-        <div className="panel rounded-sm p-6">
-          <h2 className="font-display text-2xl font-semibold uppercase text-white">
-            {siteConfig.brand} × SZGH
+      <div className="stack-after-lead grid gap-6 lg:grid-cols-2">
+        <div className="panel rounded-none p-6">
+          <h2 className="heading-2">
+            Производитель
           </h2>
-          <p className="mt-3 text-sm leading-relaxed text-steel-300">
-            Мы работаем как прямой канал поставки: оборудование, пусконаладка,
-            обучение, гарантия и запасные части. Позиционирование — промышленный
-            B2B-дистрибьютор, а не «перекупка станков».
+          <p className="mt-3 text-sm leading-relaxed text-ink-muted">
+            ShenZhen GuanHong Automation разрабатывает и производит станки с ЧПУ,
+            системы управления, сервоприводы и двигатели. Единая экосистема станка и
+            электроники упрощает сервис и поддержку.
           </p>
         </div>
-        <div className="panel rounded-sm p-6">
-          <h2 className="font-display text-2xl font-semibold uppercase text-white">
-            Производитель SZGH
+        <div className="panel rounded-none p-6">
+          <h2 className="heading-2">
+            {siteConfig.brand} × SZGH
           </h2>
-          <p className="mt-3 text-sm leading-relaxed text-steel-300">
-            ShenZhen GuanHong Automation разрабатывает и производит собственные
-            системы ЧПУ, сервоприводы и двигатели. Это даёт единую экосистему
-            станка и управляющей электроники.
+          <p className="mt-3 text-sm leading-relaxed text-ink-muted">
+            Через каталог {siteConfig.brand} можно подобрать модель SZGH и запросить
+            КП. Детали поставки и сервиса согласуются в коммерческом предложении и
+            договоре.
           </p>
+          {company.isOfficialDistributor ? (
+            <div className="mt-4">
+              <p className="text-sm font-semibold text-ink">
+                Официальный дистрибьютор SZGH
+              </p>
+              {company.distributorCertificateUrl ? (
+                <a
+                  href={company.distributorCertificateUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-2 inline-block text-sm text-mark hover:underline"
+                >
+                  Подтверждающий документ →
+                </a>
+              ) : null}
+            </div>
+          ) : null}
         </div>
       </div>
 
-      <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="stack-after-lead grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {[
           {
-            title: "Собственные узлы",
-            text: "ЧПУ, приводы и двигатели SZGH — аргумент надёжности и сервиса.",
+            title: "Системы ЧПУ",
+            text: "Собственные контроллеры и приводы в экосистеме SZGH.",
           },
           {
-            title: "Гарантийные обязательства",
-            text: "Условия гарантии фиксируются в договоре поставки.",
+            title: "Оборудование",
+            text: "Токарные станки, ОЦ и токарно-фрезерные центры в каталоге.",
           },
           {
-            title: "Инженеры и ПНР",
-            text: "Ввод в эксплуатацию и обучение на площадке заказчика.",
-          },
-          {
-            title: "Склад ЗИП",
-            text: "Запасные части и расходники под эксплуатацию парка.",
-          },
-          {
-            title: "Техподдержка",
-            text: "Основной канал — email, срочные вопросы — телефон.",
-          },
-          {
-            title: "Территория",
-            text: "Дистрибуция по согласованной территории (уточняется в договоре).",
+            title: "Документация",
+            text: "Datasheet и руководства предоставляются по запросу.",
           },
         ].map((item) => (
-          <div key={item.title} className="panel rounded-sm p-5">
-            <h3 className="font-display text-xl font-semibold uppercase text-white">
+          <div key={item.title} className="panel rounded-none p-6">
+            <h3 className="heading-3">
               {item.title}
             </h3>
-            <p className="mt-2 text-sm text-steel-300">{item.text}</p>
+            <p className="mt-2 text-sm text-ink-muted">{item.text}</p>
           </div>
         ))}
       </div>
 
-      <div className="panel mt-10 aspect-[21/9] overflow-hidden rounded-sm bg-gradient-to-br from-ink-700 to-ink-950">
-        <div className="flex h-full items-center justify-center text-center">
-          <div>
-            <div className="font-display text-2xl uppercase tracking-wide text-white">
-              Производство SZGH
-            </div>
-            <p className="mt-2 text-sm text-steel-400">
-              Фотографии завода и сертификат дистрибьютора — добавляются после
-              согласования с производителем
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <div className="mt-8 flex flex-wrap gap-3">
+      <div className="stack-after-lead flex flex-wrap gap-3">
         <Link to="/catalog" className="btn-primary">
           Каталог SZGH
         </Link>

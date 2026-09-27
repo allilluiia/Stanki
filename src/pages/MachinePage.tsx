@@ -5,6 +5,7 @@ import { MetricGrid } from "@/components/MetricGrid";
 import { StatusBadge } from "@/components/StatusBadge";
 import { LeadForm } from "@/components/LeadForm";
 import { MachineVisual } from "@/components/MachineVisual";
+import { DocumentList } from "@/components/DocumentList";
 
 export function MachinePage() {
   const { machineSlug } = useParams();
@@ -12,7 +13,7 @@ export function MachinePage() {
 
   if (!machine) {
     return (
-      <div className="container-page section-y">
+      <div className="container-page page-start">
         <h1 className="section-title">Станок не найден</h1>
         <Link to="/catalog" className="btn-secondary mt-6 inline-flex">
           В каталог
@@ -27,14 +28,14 @@ export function MachinePage() {
     <div>
       <section className="page-hero">
         <div className="page-hero-inner">
-          <div className="text-[11px] uppercase tracking-[0.16em] text-steel-400 sm:text-xs">
-            <Link to="/catalog" className="hover:text-white">
+          <div className="text-[11px] uppercase tracking-[0.16em] text-ink-faint sm:text-xs">
+            <Link to="/catalog" className="hover:text-ink">
               Каталог
             </Link>
             {category ? (
               <>
                 {" / "}
-                <Link to={`/catalog/${category.slug}`} className="hover:text-white">
+                <Link to={`/catalog/${category.slug}`} className="hover:text-ink">
                   {category.title}
                 </Link>
               </>
@@ -46,15 +47,21 @@ export function MachinePage() {
           <div className="mt-5 grid items-start gap-8 lg:grid-cols-[1.05fr_0.95fr] lg:gap-12">
             <div>
               <div className="flex flex-wrap items-center gap-3">
-                <h1 className="font-display text-4xl font-bold uppercase leading-none tracking-wide text-white sm:text-5xl md:text-6xl">
+                <h1 className="font-display text-4xl font-bold uppercase leading-none tracking-wide text-ink sm:text-5xl md:text-6xl">
                   {machine.model}
                 </h1>
                 <StatusBadge status={machine.availability} />
               </div>
-              <p className="mt-3 text-base text-steel-200 sm:text-lg">{machine.name}</p>
-              <p className="mt-3 max-w-2xl text-sm leading-relaxed text-steel-300 sm:text-base">
-                {machine.application}
-              </p>
+              <p className="mt-3 text-base text-ink-soft sm:text-lg">{machine.name}</p>
+              {machine.application ? (
+                <p className="mt-3 max-w-2xl text-sm leading-relaxed text-ink-muted sm:text-base">
+                  {machine.application}
+                </p>
+              ) : machine.shortDescription ? (
+                <p className="mt-3 max-w-2xl text-sm leading-relaxed text-ink-muted sm:text-base">
+                  {machine.shortDescription}
+                </p>
+              ) : null}
               <div className="mt-6 flex w-full flex-col gap-3 sm:flex-row">
                 <Link
                   to={`/contacts?type=quote&machine=${machine.slug}`}
@@ -70,118 +77,129 @@ export function MachinePage() {
 
             <MachineVisual
               label={machine.model}
-              className="aspect-[16/11] w-full shadow-panel"
+              categoryId={machine.categoryId}
+              media={machine.media}
+              className="aspect-[16/11] w-full shadow-frame"
             />
           </div>
 
-          <div className="mt-8 sm:mt-10">
-            <MetricGrid metrics={machine.heroMetrics} />
-          </div>
+          {machine.heroMetrics.length > 0 ? (
+            <div className="mt-8 sm:mt-10">
+              <MetricGrid metrics={machine.heroMetrics} />
+            </div>
+          ) : null}
         </div>
       </section>
 
       <div className="container-page section-y">
-        <div className="panel mb-10 overflow-hidden rounded-sm sm:mb-12">
-          <div className="flex aspect-video items-center justify-center bg-gradient-to-br from-ink-700 to-ink-950 px-6 text-center">
-            <div>
-              <div className="font-display text-xl uppercase tracking-wide text-white sm:text-2xl md:text-3xl">
-                {machine.videoPlaceholder}
-              </div>
-              <p className="mt-2 text-sm text-steel-400">
-                Видео реальной обработки — из материалов SZGH
-              </p>
+        {machine.media?.video ? (
+          <div className="panel mb-10 overflow-hidden rounded-none sm:mb-12">
+            <div className="aspect-video bg-white">
+              <video
+                className="h-full w-full"
+                controls
+                preload="none"
+                poster={machine.media.videoPoster}
+                src={machine.media.video}
+              />
             </div>
           </div>
-        </div>
+        ) : null}
 
         <div className="grid gap-10 lg:grid-cols-[1.2fr_0.8fr] lg:gap-12">
           <div className="space-y-10 sm:space-y-12">
-            <section>
-              <h2 className="font-display text-2xl font-semibold uppercase text-white sm:text-3xl">
-                Возможности станка
-              </h2>
-              <ul className="mt-4 grid gap-2 sm:grid-cols-2">
-                {machine.capabilities.map((item) => (
-                  <li
-                    key={item}
-                    className="panel rounded-sm px-4 py-3.5 text-sm text-steel-100"
-                  >
-                    {item}
-                  </li>
-                ))}
-              </ul>
-            </section>
+            {machine.capabilities.length > 0 ? (
+              <section>
+                <h2 className="heading-2">
+                  Возможности станка
+                </h2>
+                <ul className="mt-4 grid gap-2 sm:grid-cols-2">
+                  {machine.capabilities.map((item) => (
+                    <li
+                      key={item}
+                      className="rounded-none border border-line bg-surface px-4 py-3.5 text-sm text-ink-soft"
+                    >
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            ) : null}
 
-            <section>
-              <h2 className="font-display text-2xl font-semibold uppercase text-white sm:text-3xl">
-                Технические характеристики
-              </h2>
-              <div className="table-scroll mt-4">
-                <div className="min-w-[520px] overflow-hidden rounded-sm border border-white/10 sm:min-w-0">
+            {machine.specs.length > 0 ? (
+              <section>
+                <h2 className="heading-2">
+                  Технические характеристики
+                </h2>
+                <div className="mt-4 overflow-hidden rounded-none border border-line">
                   <table className="min-w-full text-sm">
                     <tbody>
                       {machine.specs.map((row) => (
                         <tr
                           key={row.label}
-                          className="border-t border-white/5 first:border-0"
+                          className="border-t border-line-soft first:border-0"
                         >
-                          <th className="w-[48%] bg-ink-900/50 px-3 py-3 text-left font-medium text-steel-300 sm:px-4">
+                          <th className="w-[48%] bg-canvas-soft px-3 py-3 text-left font-medium text-ink-muted sm:px-4">
                             {row.label}
                           </th>
-                          <td className="px-3 py-3 text-white sm:px-4">{row.value}</td>
+                          <td className="px-3 py-3 text-ink sm:px-4">{row.value}</td>
                         </tr>
                       ))}
                     </tbody>
                   </table>
                 </div>
-              </div>
-            </section>
+              </section>
+            ) : (
+              <section>
+                <h2 className="heading-2">
+                  Технические характеристики
+                </h2>
+                <p className="mt-3 text-sm text-ink-muted">
+                  Полные характеристики предоставим в коммерческом предложении и
+                  datasheet производителя по запросу.
+                </p>
+              </section>
+            )}
+
+            {machine.standardEquipment.length > 0 ? (
+              <section>
+                <h2 className="heading-2">
+                  Стандартная комплектация
+                </h2>
+                <ul className="mt-4 space-y-2.5">
+                  {machine.standardEquipment.map((item) => (
+                    <li key={item} className="flex gap-2.5 text-sm text-ink-soft">
+                      <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-accent" />
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            ) : null}
+
+            {machine.options.length > 0 ? (
+              <section>
+                <h2 className="heading-2">
+                  Опции
+                </h2>
+                <ul className="mt-4 space-y-2.5">
+                  {machine.options.map((item) => (
+                    <li key={item} className="flex gap-2.5 text-sm text-ink-soft">
+                      <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-accent" />
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            ) : null}
 
             <section>
-              <h2 className="font-display text-2xl font-semibold uppercase text-white sm:text-3xl">
-                Стандартная комплектация
-              </h2>
-              <ul className="mt-4 space-y-2.5">
-                {machine.standardEquipment.map((item) => (
-                  <li key={item} className="flex gap-2.5 text-sm text-steel-200">
-                    <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-accent" />
-                    {item}
-                  </li>
-                ))}
-              </ul>
-            </section>
-
-            <section>
-              <h2 className="font-display text-2xl font-semibold uppercase text-white sm:text-3xl">
-                Опции
-              </h2>
-              <ul className="mt-4 space-y-2.5">
-                {machine.options.map((item) => (
-                  <li key={item} className="flex gap-2.5 text-sm text-steel-200">
-                    <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-brass" />
-                    {item}
-                  </li>
-                ))}
-              </ul>
-            </section>
-
-            <section>
-              <h2 className="font-display text-2xl font-semibold uppercase text-white sm:text-3xl">
+              <h2 className="heading-2">
                 Документы
               </h2>
-              <ul className="mt-4 divide-y divide-white/5 rounded-sm border border-white/10">
-                {machine.documents.map((doc) => (
-                  <li
-                    key={doc.title}
-                    className="flex items-center justify-between gap-3 px-3 py-3.5 text-sm sm:px-4"
-                  >
-                    <span className="text-steel-100">{doc.title}</span>
-                    <span className="shrink-0 text-[10px] uppercase tracking-[0.12em] text-steel-400 sm:text-xs">
-                      {doc.availability === "available" ? "Доступен" : "По запросу"}
-                    </span>
-                  </li>
-                ))}
-              </ul>
+              <div className="mt-4">
+                <DocumentList documents={machine.documents} />
+              </div>
               <Link
                 to={`/docs?q=${encodeURIComponent(machine.model)}`}
                 className="btn-secondary mt-4 inline-flex"
@@ -193,6 +211,7 @@ export function MachinePage() {
 
           <div id="lead" className="lg:sticky lg:top-28 lg:self-start">
             <LeadForm
+              key={machine.slug}
               type="quote"
               machineSlug={machine.slug}
               machineModel={machine.model}

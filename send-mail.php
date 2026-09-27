@@ -1,65 +1,157 @@
 <?php
-header("Content-Type: application/json; charset=utf-8");
-header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Methods: POST, OPTIONS");
-header("Access-Control-Allow-Headers: Content-Type");
+/**
+ * Stanki lead form endpoint — production PHP hosting only.
+ * Credentials via environment variables. Never commit secrets.
+ */
 
+header("Content-Type: application/json; charset=utf-8");
+
+function json_exit(int $code, bool $success, string $message): void {
+    http_response_code($code);
+    echo json_encode([
+        "success" => $success,
+        "message" => $message,
+    ], JSON_UNESCAPED_UNICODE);
+    exit;
+}
+
+function client_error(string $message): void {
+    json_exit(400, false, $message);
+}
+
+function server_fail(string $logMessage): void {
+    $logFile = __DIR__ . '/mail_log.txt';
+    @file_put_contents(
+        $logFile,
+        date('Y-m-d H:i:s') . ' ERROR: ' . $logMessage . "\n",
+        FILE_APPEND
+    );
+    json_exit(
+        500,
+        false,
+        "Не удалось отправить заявку. Попробуйте ещё раз или свяжитесь с нами по телефону/email."
+    );
+}
+
+function strip_crlf(string $value): string {
+    return str_replace(["\r", "\n", "%0a", "%0d", "%0A", "%0D"], "", $value);
+}
+
+// ---- Method ----
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    http_response_code(200);
+    // Same-origin forms should not need CORS; reject broad preflight
+    http_response_code(204);
     exit;
 }
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    http_response_code(405);
-    echo json_encode([
-        "success" => false,
-        "message" => "Method not allowed",
-    ], JSON_UNESCAPED_UNICODE);
-    exit;
+    json_exit(405, false, "Method not allowed");
 }
 
-$input = file_get_contents("php://input");
-$data  = json_decode($input, true);
+// ---- Origin allowlist (optional) ----
+$allowedOrigins = array_filter(array_map('trim', explode(',', (string)getenv('STANKI_ALLOWED_ORIGINS'))));
+$origin = $_SERVER['HTTP_ORIGIN'] ?? '';
+if ($origin !== '' && count($allowedOrigins) > 0) {
+    if (!in_array($origin, $allowedOrigins, true)) {
+        json_exit(403, false, "Forbidden");
+    }
+    header('Access-Control-Allow-Origin: ' . $origin);
+    header('Vary: Origin');
+}
 
+// ---- Body size ----
+$maxBody = 64 * 1024;
+$contentLength = (int)($_SERVER['CONTENT_LENGTH'] ?? 0);
+if ($contentLength > $maxBody) {
+    client_error("Слишком большой запрос");
+}
+
+$raw = file_get_contents("php://input", false, null, 0, $maxBody + 1);
+if ($raw === false || strlen($raw) > $maxBody) {
+    client_error("Слишком большой запрос");
+}
+
+$data = json_decode($raw, true);
 if (!is_array($data)) {
-    http_response_code(400);
-    echo json_encode([
-        "success" => false,
-        "message" => "Invalid JSON",
-    ], JSON_UNESCAPED_UNICODE);
-    exit;
+    client_error("Некорректный запрос");
 }
 
-// Получатели заявок — замените на рабочие адреса
-$recipients = [
-    "info@stanki.ru",
+// ---- Rate limit (file-based, per IP) ----
+$ip = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
+$rateDir = sys_get_temp_dir() . '/stanki_mail_rate';
+if (!is_dir($rateDir)) {
+    @mkdir($rateDir, 0700, true);
+}
+$rateFile = $rateDir . '/' . hash('sha256', $ip) . '.json';
+$now = time();
+$window = 600; // 10 minutes
+$maxHits = 8;
+$hits = [];
+if (is_file($rateFile)) {
+    $decoded = json_decode((string)file_get_contents($rateFile), true);
+    if (is_array($decoded)) {
+        $hits = array_values(array_filter($decoded, static fn($t) => is_int($t) && ($now - $t) < $window));
+    }
+}
+if (count($hits) >= $maxHits) {
+    json_exit(429, false, "Слишком много заявок. Попробуйте позже.");
+}
+$hits[] = $now;
+@file_put_contents($rateFile, json_encode($hits));
+
+// ---- Honeypot / timing ----
+$honeypot = trim((string)($data["website"] ?? ""));
+if ($honeypot !== "") {
+    // Silent success for bots
+    json_exit(200, true, "Заявка успешно отправлена");
+}
+
+$startedAt = (int)($data["formStartedAt"] ?? 0);
+if ($startedAt > 0 && ($now * 1000 - $startedAt) < 1200) {
+    json_exit(200, true, "Заявка успешно отправлена");
+}
+
+if (empty($data["consent"])) {
+    client_error("Необходимо согласие на обработку персональных данных");
+}
+
+// ---- Fields ----
+$limits = [
+    "organization" => 200,
+    "name" => 120,
+    "email" => 254,
+    "phone" => 24,
+    "message" => 12000,
+    "formType" => 32,
+    "machineSlug" => 80,
+    "machineModel" => 120,
+    "context" => 200,
+    "categoryId" => 40,
 ];
 
-$organization = trim((string)($data["organization"] ?? ""));
-$name         = trim((string)($data["name"] ?? ""));
-$email        = trim((string)($data["email"] ?? ""));
-$phone        = trim((string)($data["phone"] ?? ""));
-$message      = trim((string)($data["message"] ?? ""));
-$formType     = trim((string)($data["formType"] ?? "contact"));
-$machineSlug  = trim((string)($data["machineSlug"] ?? ""));
-$machineModel = trim((string)($data["machineModel"] ?? ""));
+$organization = mb_substr(trim((string)($data["organization"] ?? "")), 0, $limits["organization"]);
+$name         = mb_substr(trim((string)($data["name"] ?? "")), 0, $limits["name"]);
+$email        = mb_substr(trim((string)($data["email"] ?? "")), 0, $limits["email"]);
+$phone        = mb_substr(trim((string)($data["phone"] ?? "")), 0, $limits["phone"]);
+$message      = mb_substr(trim((string)($data["message"] ?? "")), 0, $limits["message"]);
+$formType     = mb_substr(trim((string)($data["formType"] ?? "contact")), 0, $limits["formType"]);
+$machineSlug  = mb_substr(trim((string)($data["machineSlug"] ?? "")), 0, $limits["machineSlug"]);
+$machineModel = mb_substr(trim((string)($data["machineModel"] ?? "")), 0, $limits["machineModel"]);
+$context      = mb_substr(trim((string)($data["context"] ?? "")), 0, $limits["context"]);
+$categoryId   = mb_substr(trim((string)($data["categoryId"] ?? "")), 0, $limits["categoryId"]);
+
+$name = strip_crlf($name);
+$email = strip_crlf($email);
+$phone = strip_crlf($phone);
+$organization = strip_crlf($organization);
+$machineModel = strip_crlf($machineModel);
 
 if ($name === "" || $message === "" || $email === "") {
-    http_response_code(400);
-    echo json_encode([
-        "success" => false,
-        "message" => "Не заполнены обязательные поля (имя, email, сообщение)",
-    ], JSON_UNESCAPED_UNICODE);
-    exit;
+    client_error("Не заполнены обязательные поля");
 }
 
 if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-    http_response_code(400);
-    echo json_encode([
-        "success" => false,
-        "message" => "Некорректный email",
-    ], JSON_UNESCAPED_UNICODE);
-    exit;
+    client_error("Некорректный email");
 }
 
 $typeLabels = [
@@ -68,131 +160,84 @@ $typeLabels = [
     "contact" => "Сообщение",
 ];
 $typeLabel = $typeLabels[$formType] ?? "Заявка";
-
-$subject = "Stanki: {$typeLabel}";
-if ($machineModel !== "") {
-    $subject .= " — {$machineModel}";
-}
+$subject = strip_crlf("Stanki: {$typeLabel}" . ($machineModel !== "" ? " — {$machineModel}" : ""));
 
 $safe = static function (string $value): string {
     return htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
 };
 
-$bodyLines = [];
-$bodyLines[] = "Новая заявка с сайта Stanki";
-$bodyLines[] = "==================================";
-$bodyLines[] = "Тип: " . $typeLabel;
-if ($machineModel !== "") {
-    $bodyLines[] = "Модель: " . $machineModel;
-}
-if ($machineSlug !== "") {
-    $bodyLines[] = "Slug: " . $machineSlug;
-}
-$bodyLines[] = "";
-if ($organization !== "") {
-    $bodyLines[] = "Организация: " . $organization;
-}
-$bodyLines[] = "Фамилия и имя: " . $name;
-$bodyLines[] = "Email: " . $email;
-if ($phone !== "") {
-    $bodyLines[] = "Телефон: " . $phone;
-}
+$bodyLines = [
+    "Новая заявка с сайта Stanki",
+    "Тип: {$typeLabel}",
+];
+if ($machineModel !== "") $bodyLines[] = "Модель: {$machineModel}";
+if ($machineSlug !== "") $bodyLines[] = "Slug: {$machineSlug}";
+if ($context !== "") $bodyLines[] = "Контекст: {$context}";
+if ($categoryId !== "") $bodyLines[] = "Категория: {$categoryId}";
+if ($organization !== "") $bodyLines[] = "Организация: {$organization}";
+$bodyLines[] = "Имя: {$name}";
+$bodyLines[] = "Email: {$email}";
+if ($phone !== "") $bodyLines[] = "Телефон: {$phone}";
 $bodyLines[] = "";
 $bodyLines[] = "Сообщение:";
 $bodyLines[] = $message;
-$bodyLines[] = "";
-$bodyLines[] = "---";
-$bodyLines[] = "Автоматическое письмо с сайта Stanki";
-
 $textBody = implode("\n", $bodyLines);
 
-$htmlBody = '<!DOCTYPE html><html lang="ru"><head><meta charset="UTF-8"><title>Заявка Stanki</title></head><body style="font-family:Arial,sans-serif;color:#222;max-width:640px;margin:0 auto;padding:20px;">';
-$htmlBody .= '<h1 style="color:#0c1016;">Новая заявка с сайта Stanki</h1>';
-$htmlBody .= '<table style="width:100%;border-collapse:collapse;">';
-$htmlBody .= '<tr><td style="padding:8px 0;font-weight:bold;">Тип</td><td style="padding:8px 0;">' . $safe($typeLabel) . '</td></tr>';
-if ($machineModel !== "") {
-    $htmlBody .= '<tr><td style="padding:8px 0;font-weight:bold;">Модель</td><td style="padding:8px 0;">' . $safe($machineModel) . '</td></tr>';
-}
-if ($organization !== "") {
-    $htmlBody .= '<tr><td style="padding:8px 0;font-weight:bold;">Организация</td><td style="padding:8px 0;">' . $safe($organization) . '</td></tr>';
-}
-$htmlBody .= '<tr><td style="padding:8px 0;font-weight:bold;">Имя</td><td style="padding:8px 0;">' . $safe($name) . '</td></tr>';
-$htmlBody .= '<tr><td style="padding:8px 0;font-weight:bold;">Email</td><td style="padding:8px 0;"><a href="mailto:' . $safe($email) . '">' . $safe($email) . '</a></td></tr>';
-if ($phone !== "") {
-    $htmlBody .= '<tr><td style="padding:8px 0;font-weight:bold;">Телефон</td><td style="padding:8px 0;">' . $safe($phone) . '</td></tr>';
-}
-$htmlBody .= '<tr><td style="padding:8px 0;font-weight:bold;vertical-align:top;">Сообщение</td><td style="padding:8px 0;white-space:pre-wrap;">' . nl2br($safe($message)) . '</td></tr>';
-$htmlBody .= '</table>';
-$htmlBody .= '<p style="margin-top:24px;font-size:12px;color:#666;">Дата: ' . date('d.m.Y H:i:s') . '</p>';
-$htmlBody .= '</body></html>';
+$htmlBody = '<!DOCTYPE html><html lang="ru"><body style="font-family:Arial,sans-serif;color:#222;">';
+$htmlBody .= '<h1>Новая заявка — Stanki</h1><table>';
+$htmlBody .= '<tr><td><b>Тип</b></td><td>' . $safe($typeLabel) . '</td></tr>';
+if ($machineModel !== "") $htmlBody .= '<tr><td><b>Модель</b></td><td>' . $safe($machineModel) . '</td></tr>';
+if ($context !== "") $htmlBody .= '<tr><td><b>Контекст</b></td><td>' . $safe($context) . '</td></tr>';
+if ($organization !== "") $htmlBody .= '<tr><td><b>Организация</b></td><td>' . $safe($organization) . '</td></tr>';
+$htmlBody .= '<tr><td><b>Имя</b></td><td>' . $safe($name) . '</td></tr>';
+$htmlBody .= '<tr><td><b>Email</b></td><td>' . $safe($email) . '</td></tr>';
+if ($phone !== "") $htmlBody .= '<tr><td><b>Телефон</b></td><td>' . $safe($phone) . '</td></tr>';
+$htmlBody .= '<tr><td><b>Сообщение</b></td><td style="white-space:pre-wrap;">' . nl2br($safe($message)) . '</td></tr>';
+$htmlBody .= '</table><p style="font-size:12px;color:#666;">' . date('d.m.Y H:i:s') . '</p></body></html>';
 
-$fromEmail = "noreply@stanki.ru";
-$fromName  = "Stanki Website";
+$recipientsEnv = getenv('STANKI_MAIL_TO') ?: '';
+$recipients = array_values(array_filter(array_map('trim', explode(',', $recipientsEnv))));
+if (count($recipients) === 0) {
+    server_fail('STANKI_MAIL_TO is not configured');
+}
 
-// PHPMailer (если установлен на хостинге рядом с сайтом)
+$smtpHost = getenv('STANKI_SMTP_HOST') ?: '';
+$smtpUser = getenv('STANKI_SMTP_USER') ?: '';
+$smtpPass = getenv('STANKI_SMTP_PASS') ?: '';
+$smtpPort = (int)(getenv('STANKI_SMTP_PORT') ?: 465);
+$fromEmail = getenv('STANKI_MAIL_FROM') ?: $smtpUser;
+$fromName = getenv('STANKI_MAIL_FROM_NAME') ?: 'Stanki Website';
+
 $phpmailerException = __DIR__ . '/phpmailer/Exception.php';
-$sent = false;
-$errorMessage = "";
+if (!file_exists($phpmailerException) || $smtpHost === '' || $smtpUser === '' || $smtpPass === '' || $fromEmail === '') {
+    server_fail('SMTP/PHPMailer is not configured');
+}
 
-if (file_exists($phpmailerException)) {
-    require $phpmailerException;
-    require __DIR__ . '/phpmailer/PHPMailer.php';
-    require __DIR__ . '/phpmailer/SMTP.php';
+require $phpmailerException;
+require __DIR__ . '/phpmailer/PHPMailer.php';
+require __DIR__ . '/phpmailer/SMTP.php';
 
+try {
     $mail = new PHPMailer\PHPMailer\PHPMailer(true);
-    try {
-        // Заполните SMTP при деплое на Beget / хостинг
-        $mail->isSMTP();
-        $mail->Host       = getenv('STANKI_SMTP_HOST') ?: 'smtp.beget.com';
-        $mail->Port       = (int)(getenv('STANKI_SMTP_PORT') ?: 465);
-        $mail->SMTPSecure = PHPMailer\PHPMailer\PHPMailer::ENCRYPTION_SMTPS;
-        $mail->SMTPAuth   = true;
-        $mail->Username   = getenv('STANKI_SMTP_USER') ?: 'info@stanki.ru';
-        $mail->Password   = getenv('STANKI_SMTP_PASS') ?: '';
-        $mail->CharSet    = 'UTF-8';
-        $mail->setFrom($mail->Username, $fromName);
-        foreach ($recipients as $recipient) {
-            $mail->addAddress($recipient);
-        }
-        $mail->addReplyTo($email, $name);
-        $mail->Subject = $subject;
-        $mail->isHTML(true);
-        $mail->Body    = $htmlBody;
-        $mail->AltBody = $textBody;
-        $mail->send();
-        $sent = true;
-    } catch (Throwable $e) {
-        $errorMessage = $e->getMessage();
-    }
-} else {
-    $headers = [];
-    $headers[] = "MIME-Version: 1.0";
-    $headers[] = "Content-Type: text/html; charset=UTF-8";
-    $headers[] = "From: {$fromName} <{$fromEmail}>";
-    $headers[] = "Reply-To: {$name} <{$email}>";
-    $headers[] = "X-Mailer: Stanki Contact Form";
-
+    $mail->isSMTP();
+    $mail->Host = $smtpHost;
+    $mail->Port = $smtpPort;
+    $mail->SMTPSecure = PHPMailer\PHPMailer\PHPMailer::ENCRYPTION_SMTPS;
+    $mail->SMTPAuth = true;
+    $mail->Username = $smtpUser;
+    $mail->Password = $smtpPass;
+    $mail->CharSet = 'UTF-8';
+    $mail->setFrom($fromEmail, $fromName);
     foreach ($recipients as $recipient) {
-        $ok = @mail($recipient, "=?UTF-8?B?" . base64_encode($subject) . "?=", $htmlBody, implode("\r\n", $headers));
-        if ($ok) {
-            $sent = true;
-        }
+        $mail->addAddress($recipient);
     }
-    if (!$sent) {
-        $errorMessage = "mail() не удалось отправить письмо. Настройте PHPMailer/SMTP на хостинге.";
-    }
+    $mail->addReplyTo($email, $name);
+    $mail->Subject = $subject;
+    $mail->isHTML(true);
+    $mail->Body = $htmlBody;
+    $mail->AltBody = $textBody;
+    $mail->send();
+    json_exit(200, true, "Заявка успешно отправлена");
+} catch (Throwable $e) {
+    server_fail($e->getMessage());
 }
-
-if ($sent) {
-    echo json_encode([
-        "success" => true,
-        "message" => "Заявка успешно отправлена",
-    ], JSON_UNESCAPED_UNICODE);
-    exit;
-}
-
-http_response_code(500);
-echo json_encode([
-    "success" => false,
-    "message" => "Ошибка отправки: " . ($errorMessage !== "" ? $errorMessage : "unknown"),
-], JSON_UNESCAPED_UNICODE);

@@ -1,29 +1,30 @@
 import { Link } from "react-router-dom";
-import { siteConfig } from "@/lib/siteConfig";
+import { hasEmail, hasPhone, siteConfig } from "@/lib/siteConfig";
 import { categories } from "@/data/categories";
 
 export function Footer() {
+  const { company } = siteConfig;
+
   return (
-    <footer className="mt-8 border-t border-white/10 bg-ink-900/80 sm:mt-12">
-      <div className="container-page grid gap-10 py-12 sm:grid-cols-2 sm:py-14 lg:grid-cols-4 lg:gap-8">
+    <footer className="border-t border-line bg-surface pb-[env(safe-area-inset-bottom)] lg:pb-0">
+      <div className="container-page grid gap-10 py-16 sm:grid-cols-2 sm:gap-8 lg:grid-cols-4 lg:gap-10 lg:py-20">
         <div className="sm:col-span-2 lg:col-span-1">
-          <div className="font-display text-3xl font-bold uppercase tracking-wide text-white">
+          <div className="font-display text-2xl font-bold tracking-tight text-ink">
             {siteConfig.brand}
           </div>
-          <p className="mt-3 max-w-sm text-sm leading-relaxed text-steel-300">
-            {siteConfig.tagline}. Поставка, пусконаладка, поддержка и запасные
-            части.
+          <p className="mt-4 max-w-sm text-sm leading-relaxed text-ink-muted">
+            {siteConfig.tagline}.
           </p>
         </div>
 
         <div>
-          <h3 className="text-[11px] font-semibold uppercase tracking-[0.16em] text-steel-400">
+          <h3 className="text-xs font-semibold uppercase tracking-[0.14em] text-ink-faint">
             Каталог
           </h3>
-          <ul className="mt-3 space-y-2.5 text-sm text-steel-200">
+          <ul className="mt-5 space-y-3 text-sm text-ink-soft">
             {categories.map((c) => (
               <li key={c.id}>
-                <Link className="hover:text-white" to={`/catalog/${c.slug}`}>
+                <Link className="link-quiet" to={`/catalog/${c.slug}`}>
                   {c.title}
                 </Link>
               </li>
@@ -32,55 +33,69 @@ export function Footer() {
         </div>
 
         <div>
-          <h3 className="text-[11px] font-semibold uppercase tracking-[0.16em] text-steel-400">
+          <h3 className="text-xs font-semibold uppercase tracking-[0.14em] text-ink-faint">
             Компания
           </h3>
-          <ul className="mt-3 space-y-2.5 text-sm text-steel-200">
+          <ul className="mt-5 space-y-3 text-sm text-ink-soft">
             <li>
-              <Link className="hover:text-white" to="/service">
+              <Link className="link-quiet" to="/service">
                 Сервис
               </Link>
             </li>
             <li>
-              <Link className="hover:text-white" to="/docs">
+              <Link className="link-quiet" to="/docs">
                 Документация
               </Link>
             </li>
             <li>
-              <Link className="hover:text-white" to="/about-szgh">
+              <Link className="link-quiet" to="/about-szgh">
                 О SZGH
               </Link>
             </li>
             <li>
-              <Link className="hover:text-white" to="/about">
+              <Link className="link-quiet" to="/about">
                 О компании
+              </Link>
+            </li>
+            <li>
+              <Link className="link-quiet" to="/privacy">
+                Конфиденциальность
               </Link>
             </li>
           </ul>
         </div>
 
         <div>
-          <h3 className="text-[11px] font-semibold uppercase tracking-[0.16em] text-steel-400">
+          <h3 className="text-xs font-semibold uppercase tracking-[0.14em] text-ink-faint">
             Контакты
           </h3>
-          <ul className="mt-3 space-y-2.5 text-sm text-steel-200">
-            <li>
-              <a className="hover:text-white" href={`mailto:${siteConfig.email}`}>
-                {siteConfig.email}
-              </a>
-            </li>
-            <li>
-              <a className="hover:text-white" href={siteConfig.phoneHref}>
-                {siteConfig.phone}
-              </a>
-            </li>
-            <li className="text-steel-400">{siteConfig.address}</li>
+          <ul className="mt-5 space-y-3 text-sm text-ink-soft">
+            {hasEmail() ? (
+              <li>
+                <a className="link-quiet" href={`mailto:${company.email}`}>
+                  {company.email}
+                </a>
+              </li>
+            ) : null}
+            {hasPhone() ? (
+              <li>
+                <a className="link-quiet" href={company.phoneHref}>
+                  {company.phone}
+                </a>
+              </li>
+            ) : null}
+            {!hasEmail() && !hasPhone() ? (
+              <li>
+                <Link className="link-quiet" to="/contacts">
+                  Форма заявки
+                </Link>
+              </li>
+            ) : null}
           </ul>
         </div>
       </div>
-      <div className="border-t border-white/5 px-4 py-5 text-center text-xs text-steel-500">
-        © {new Date().getFullYear()} {siteConfig.brand}. Официальный дистрибьютор
-        SZGH.
+      <div className="border-t border-line px-4 py-6 text-center text-xs tracking-wide text-ink-faint">
+        © {new Date().getFullYear()} {siteConfig.brand}. Каталог оборудования SZGH.
       </div>
     </footer>
   );

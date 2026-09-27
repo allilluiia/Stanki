@@ -1,4 +1,4 @@
-import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Layout } from "@/components/layout/AppLayout";
 import { HomePage } from "@/pages/HomePage";
 import { CatalogPage } from "@/pages/CatalogPage";
@@ -10,6 +10,8 @@ import { DocsPage } from "@/pages/DocsPage";
 import { AboutSzghPage } from "@/pages/AboutSzghPage";
 import { AboutPage } from "@/pages/AboutPage";
 import { ContactsPage } from "@/pages/ContactsPage";
+import { PrivacyPage } from "@/pages/PrivacyPage";
+import { NotFoundPage } from "@/pages/NotFoundPage";
 
 const basename =
   import.meta.env.BASE_URL === "/"
@@ -31,7 +33,8 @@ export default function App() {
           <Route path="about-szgh" element={<AboutSzghPage />} />
           <Route path="about" element={<AboutPage />} />
           <Route path="contacts" element={<ContactsPage />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
+          <Route path="privacy" element={<PrivacyPage />} />
+          <Route path="*" element={<NotFoundPage />} />
         </Route>
       </Routes>
     </BrowserRouter>

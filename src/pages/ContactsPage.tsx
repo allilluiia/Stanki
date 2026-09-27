@@ -1,9 +1,9 @@
 import { useMemo } from "react";
-import { useSearchParams } from "react-router-dom";
-import { Mail, Phone } from "lucide-react";
+import { Link, useSearchParams } from "react-router-dom";
+import { Mail, Phone, MapPin } from "lucide-react";
 import { LeadForm, type LeadType } from "@/components/LeadForm";
 import { getMachineBySlug } from "@/data/machines";
-import { siteConfig } from "@/lib/siteConfig";
+import { hasEmail, hasPhone, siteConfig } from "@/lib/siteConfig";
 
 export function ContactsPage() {
   const [params] = useSearchParams();
@@ -18,47 +18,84 @@ export function ContactsPage() {
     return "contact";
   }, [typeParam]);
 
+  const { company } = siteConfig;
+
   return (
-    <div className="container-page section-y">
+    <div className="container-page page-start">
       <h1 className="section-title">Контакты</h1>
       <p className="section-lead">
-        Заявки обрабатываем по email. Укажите организацию, задачу и модель — ответим
-        коммерческим предложением.
+        Укажите организацию, задачу и модель — ответим коммерческим предложением
+        на указанный email.
       </p>
 
-      <div className="mt-10 grid gap-8 lg:grid-cols-[0.85fr_1.15fr] lg:items-start">
+      <div className="stack-after-lead grid gap-8 lg:grid-cols-[0.85fr_1.15fr] lg:items-start">
         <div className="space-y-3 sm:space-y-4">
-          <a
-            href={`mailto:${siteConfig.email}`}
-            className="panel flex min-h-[4.5rem] items-center gap-4 rounded-sm p-5 transition hover:border-accent/40"
-          >
-            <Mail className="h-5 w-5 text-accent-soft" />
-            <div>
-              <div className="text-xs uppercase tracking-[0.14em] text-steel-400">
-                Email
+          {hasEmail() ? (
+            <a
+              href={`mailto:${company.email}`}
+              className="panel flex min-h-[4.5rem] items-center gap-4 rounded-none p-5 transition hover:border-mark"
+            >
+              <Mail className="h-5 w-5 text-mark" />
+              <div>
+                <div className="text-xs uppercase tracking-[0.14em] text-ink-faint">
+                  Email
+                </div>
+                <div className="text-lg font-semibold text-ink">{company.email}</div>
               </div>
-              <div className="text-lg font-semibold text-white">{siteConfig.email}</div>
-            </div>
-          </a>
-          <a
-            href={siteConfig.phoneHref}
-            className="panel flex items-center gap-4 rounded-sm p-5 transition hover:border-accent/40"
-          >
-            <Phone className="h-5 w-5 text-accent-soft" />
-            <div>
-              <div className="text-xs uppercase tracking-[0.14em] text-steel-400">
-                Телефон
+            </a>
+          ) : null}
+
+          {hasPhone() ? (
+            <a
+              href={company.phoneHref}
+              className="panel flex items-center gap-4 rounded-none p-5 transition hover:border-mark"
+            >
+              <Phone className="h-5 w-5 text-mark" />
+              <div>
+                <div className="text-xs uppercase tracking-[0.14em] text-ink-faint">
+                  Телефон
+                </div>
+                <div className="text-lg font-semibold text-ink">{company.phone}</div>
               </div>
-              <div className="text-lg font-semibold text-white">{siteConfig.phone}</div>
+            </a>
+          ) : null}
+
+          {company.address ? (
+            <div className="panel flex items-start gap-4 rounded-none p-5">
+              <MapPin className="mt-0.5 h-5 w-5 text-mark" />
+              <div>
+                <div className="text-xs uppercase tracking-[0.14em] text-ink-faint">
+                  Адрес
+                </div>
+                <div className="text-sm text-ink">{company.address}</div>
+              </div>
             </div>
-          </a>
-          <div className="panel rounded-sm p-5 text-sm text-steel-300">
-            Предпочтительный канал — почта. В письме приложите чертёж детали или
-            список требований: это ускорит подбор и расчёт КП.
+          ) : null}
+
+          <div className="panel rounded-none p-6 text-sm text-ink-muted">
+            Чертёж детали или ТЗ можно приложить к ответу на наше письмо после
+            заявки
+            {hasEmail() ? (
+              <>
+                {" "}
+                или отправить сразу на{" "}
+                <a className="text-mark hover:underline" href={`mailto:${company.email}`}>
+                  {company.email}
+                </a>
+              </>
+            ) : null}
+            .
           </div>
+
+          <p className="text-xs text-ink-faint">
+            <Link to="/privacy" className="text-ink-muted hover:text-ink hover:underline">
+              Политика конфиденциальности
+            </Link>
+          </p>
         </div>
 
         <LeadForm
+          key={`${type}-${machine?.slug ?? "general"}`}
           type={type}
           machineSlug={machine?.slug}
           machineModel={machine?.model}

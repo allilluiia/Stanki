@@ -6,7 +6,7 @@ import { MachineCard } from "@/components/MachineCard";
 import { LeadForm } from "@/components/LeadForm";
 import type { CategoryId } from "@/data/types";
 
-const tasks: { id: CategoryId | "all"; title: string; hint: string }[] = [
+const tasks: { id: CategoryId; title: string; hint: string }[] = [
   {
     id: "turning",
     title: "Точение / пруток",
@@ -35,56 +35,52 @@ const tasks: { id: CategoryId | "all"; title: string; hint: string }[] = [
 ];
 
 export function SolutionsPage() {
-  const [taskId, setTaskId] = useState<(typeof tasks)[number]["id"]>("turning");
+  const [taskId, setTaskId] = useState<CategoryId>("turning");
 
-  const recommended = useMemo(() => {
-    if (taskId === "all") return [];
-    return getMachinesByCategory(taskId);
-  }, [taskId]);
-
+  const recommended = useMemo(() => getMachinesByCategory(taskId), [taskId]);
   const category = categories.find((c) => c.id === taskId);
 
   return (
-    <div className="container-page section-y">
+    <div className="container-page page-start">
       <h1 className="section-title">Подбор станка</h1>
       <p className="section-lead">
         Выберите тип задачи — покажем подходящие модели SZGH и примем заявку на
         подбор.
       </p>
 
-      <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="stack-after-lead grid gap-cards sm:grid-cols-2 lg:grid-cols-3">
         {tasks.map((task) => (
           <button
             key={task.id}
             type="button"
             onClick={() => setTaskId(task.id)}
-            className={`panel min-h-[7.5rem] rounded-sm p-5 text-left transition duration-300 ${
+            className={`panel min-h-[7.5rem] p-5 text-left transition-[border-color,background-color,box-shadow] duration-220 ease-out ${
               taskId === task.id
-                ? "border-accent/60 bg-accent/10 shadow-glow"
-                : "hover:border-white/20"
+                ? "border-accent bg-accent-wash"
+                : "hover:border-ink"
             }`}
           >
-            <div className="font-display text-xl font-semibold uppercase tracking-wide text-white">
+            <div className="font-display text-xl font-semibold tracking-tight text-ink">
               {task.title}
             </div>
-            <p className="mt-2 text-sm text-steel-300">{task.hint}</p>
+            <p className="mt-2 text-sm text-ink-muted">{task.hint}</p>
           </button>
         ))}
       </div>
 
       {category ? (
-        <div className="mt-10">
-          <h2 className="font-display text-3xl font-semibold uppercase text-white">
+        <div className="stack-after-lead">
+          <h2 className="heading-2">
             Рекомендуем: {category.title}
           </h2>
-          <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="stack-title grid gap-cards sm:grid-cols-2 lg:grid-cols-3">
             {recommended.map((machine) => (
               <MachineCard key={machine.slug} machine={machine} />
             ))}
           </div>
           <Link
             to={`/catalog/${category.slug}`}
-            className="mt-4 inline-block text-sm font-semibold text-accent-soft hover:underline"
+            className="mt-4 inline-block text-sm font-semibold text-mark hover:underline"
           >
             Смотреть всю категорию →
           </Link>
@@ -93,9 +89,11 @@ export function SolutionsPage() {
 
       <div className="mt-12 max-w-2xl">
         <LeadForm
+          key={`select-${taskId}`}
           type="select"
           title="Заявка на подбор станка"
-          machineModel={category?.title}
+          context={category?.title}
+          categoryId={category?.id}
         />
       </div>
     </div>

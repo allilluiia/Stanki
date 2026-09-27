@@ -9,7 +9,17 @@ if (!existsSync(dist)) {
   mkdirSync(dist, { recursive: true });
 }
 
-copyFileSync(join(root, "send-mail.php"), join(dist, "send-mail.php"));
+// SPA fallback for static hosts
 copyFileSync(join(dist, "index.html"), join(dist, "404.html"));
 
-console.log("postbuild: copied send-mail.php and 404.html into dist/");
+const includePhp =
+  process.env.STANKI_COPY_PHP === "1" || process.env.STANKI_COPY_PHP === "true";
+
+if (includePhp) {
+  copyFileSync(join(root, "send-mail.php"), join(dist, "send-mail.php"));
+  console.log("postbuild: copied send-mail.php + 404.html (production PHP target)");
+} else {
+  console.log(
+    "postbuild: copied 404.html only (static/GitHub Pages — PHP not included)",
+  );
+}

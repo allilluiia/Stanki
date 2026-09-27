@@ -1,42 +1,68 @@
-# Stanki — дистрибьютор SZGH
+# Stanki — каталог станков SZGH
 
-B2B-сайт поставки станков SZGH: каталог, карточки моделей, сервис, документация, заявки на email.
+B2B-сайт металлообрабатывающего оборудования SZGH: каталог, карточки моделей, сервис, документация, заявки.
 
 ## Стек
 
 - Vite + React + TypeScript + Tailwind CSS
 - React Router
 - Сборка в `dist/`
-- Заявки: `send-mail.php` (SMTP / PHPMailer на хостинге)
+- Заявки: `send-mail.php` (SMTP / PHPMailer на PHP-хостинге)
 
 ## Команды
 
 ```bash
-npm install
+npm ci
 npm run dev
+npm run lint
 npm run build
 npm run preview
 ```
 
-После `npm run build` в `dist/` попадают статика и `send-mail.php`.
+По умолчанию `send-mail.php` **не** копируется в `dist` (GitHub Pages / static preview). Для production PHP-хостинга:
 
-## Контакты
+```bash
+STANKI_COPY_PHP=1 npm run build
+```
 
-Плейсхолдеры в `src/lib/siteConfig.ts` и получатели в `send-mail.php`:
-- email: `info@stanki.ru`
-- телефон: `+7 (495) 000-00-00`
+## Контакты и утверждения
 
-Замените перед продакшеном. Для SMTP задайте `STANKI_SMTP_*` или положите PHPMailer в `phpmailer/` на хостинге.
+Все бизнес-данные — в `src/lib/siteConfig.ts`:
+
+- `company.phone` / `email` / `address` / реквизиты — опциональны; пустые поля не показываются в UI
+- `company.isOfficialDistributor` — включать только с подтверждением
+- `claims.*` — флаги сервисов (ПНР, ЗИП, гарантия и т.д.)
+
+Не заполняйте выдуманными значениями.
+
+## Почта
+
+Frontend:
+
+```bash
+# Production API (absolute or same-origin)
+VITE_MAIL_URL=https://example.com/send-mail.php
+
+# GitHub Pages / demo без backend
+VITE_PAGES_PREVIEW=true
+# или
+VITE_FORM_DEMO=true
+```
+
+Backend (`send-mail.php`) — только через environment:
+
+- `STANKI_MAIL_TO`
+- `STANKI_MAIL_FROM`
+- `STANKI_SMTP_HOST` / `STANKI_SMTP_PORT` / `STANKI_SMTP_USER` / `STANKI_SMTP_PASS`
+- `STANKI_ALLOWED_ORIGINS` (comma-separated)
+
+PHPMailer должен быть доступен на хостинге (`phpmailer/` или autoload).
 
 ## Превью для заказчика
 
 - Репозиторий: https://github.com/allilluiia/Stanki
 - Живой превью: https://allilluiia.github.io/Stanki/
 
-Обновить превью:
-
 ```bash
 npm run deploy:pages
 ```
-
-Альтернатива: workflow `.github/workflows/pages.yml` (нужен GitHub token со scope `workflow`).

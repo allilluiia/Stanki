@@ -1,83 +1,78 @@
 import { Link } from "react-router-dom";
 import { categories } from "@/data/categories";
-import { getMachinesByCategory, machines } from "@/data/machines";
+import { getMachinesByCategory } from "@/data/machines";
 import { MachineCard } from "@/components/MachineCard";
+import { StatusBadge } from "@/components/StatusBadge";
 
 export function CatalogPage() {
   return (
-    <div className="container-page section-y">
+    <div className="container-page page-start">
       <h1 className="section-title">Каталог станков SZGH</h1>
       <p className="section-lead">
-        Линейка оборудования прямого дистрибьютора. Сравните модели по ключевым
-        параметрам и запросите КП.
+        Линейка металлообрабатывающего оборудования SZGH. Выберите категорию или
+        модель и запросите коммерческое предложение.
       </p>
 
-      <div className="mt-10 space-y-12 sm:mt-12 sm:space-y-16">
+      <div className="mt-12 space-y-12 sm:mt-16 sm:space-y-16">
         {categories.map((category) => {
           const list = getMachinesByCategory(category.id);
           return (
             <section key={category.id}>
-              <div className="flex flex-wrap items-end justify-between gap-3">
+              <div className="flex flex-wrap items-end justify-between gap-4">
                 <div className="min-w-0">
-                  <h2 className="font-display text-2xl font-semibold uppercase tracking-wide text-white sm:text-3xl">
+                  <h2 className="heading-2">
                     {category.title}
                   </h2>
-                  <p className="mt-2 max-w-2xl text-sm text-steel-300">
+                  <p className="mt-2.5 max-w-2xl text-sm leading-relaxed text-ink-muted">
                     {category.description}
                   </p>
                 </div>
                 <Link
                   to={`/catalog/${category.slug}`}
-                  className="shrink-0 text-sm font-semibold text-accent-soft hover:underline"
+                  className="link-quiet shrink-0 text-sm font-semibold text-mark"
                 >
-                  Вся категория →
+                  Сравнение в категории →
                 </Link>
               </div>
 
-              {/* Tables only from md — on phones cards below */}
-              <div className="mt-5 hidden md:block">
-                <div className="overflow-hidden rounded-sm border border-white/10">
+              <div className="mt-6 hidden md:block">
+                <div className="overflow-hidden border border-line">
                   <table className="min-w-full text-left text-sm">
-                    <thead className="bg-ink-800/80 text-[10px] uppercase tracking-[0.12em] text-steel-400 sm:text-xs">
+                    <caption className="sr-only">{category.title}: список моделей</caption>
+                    <thead className="bg-canvas-soft text-[10px] uppercase tracking-[0.12em] text-ink-faint sm:text-xs">
                       <tr>
-                        <th className="px-3 py-3 font-semibold sm:px-4">Модель</th>
-                        <th className="px-3 py-3 font-semibold sm:px-4">
-                          Ключевой параметр
+                        <th scope="col" className="px-3 py-3.5 font-semibold sm:px-4">
+                          Модель
                         </th>
-                        <th className="px-3 py-3 font-semibold sm:px-4">Ещё</th>
-                        <th className="px-3 py-3 font-semibold sm:px-4">Статус</th>
+                        <th scope="col" className="px-3 py-3.5 font-semibold sm:px-4">
+                          Тип
+                        </th>
+                        <th scope="col" className="px-3 py-3.5 font-semibold sm:px-4">
+                          Статус
+                        </th>
                       </tr>
                     </thead>
                     <tbody>
                       {list.map((m) => (
                         <tr
                           key={m.slug}
-                          className="border-t border-white/5 text-steel-200 hover:bg-white/[0.03]"
+                          className="border-t border-line-soft text-ink-soft transition-colors duration-200 ease-soft hover:bg-canvas-soft"
                         >
-                          <td className="px-3 py-3 sm:px-4">
+                          <th scope="row" className="px-3 py-3.5 font-normal sm:px-4">
                             <Link
                               to={`/machines/${m.slug}`}
-                              className="font-semibold text-white hover:text-accent-soft"
+                              className="font-semibold text-ink transition-colors duration-200 ease-soft hover:text-accent"
                             >
                               {m.model}
                             </Link>
-                          </td>
-                          <td className="px-3 py-3 sm:px-4">
-                            {m.heroMetrics[0]
-                              ? `${m.heroMetrics[0].value}${m.heroMetrics[0].unit ? ` ${m.heroMetrics[0].unit}` : ""} — ${m.heroMetrics[0].label}`
-                              : "—"}
-                          </td>
-                          <td className="px-3 py-3 sm:px-4">
-                            {m.heroMetrics[1]
-                              ? `${m.heroMetrics[1].value}${m.heroMetrics[1].unit ? ` ${m.heroMetrics[1].unit}` : ""}`
-                              : "—"}
-                          </td>
-                          <td className="px-3 py-3 sm:px-4">
-                            {m.availability === "in_stock"
-                              ? "В наличии"
-                              : m.availability === "expected"
-                                ? "Ожидается"
-                                : "Под заказ"}
+                          </th>
+                          <td className="px-3 py-3.5 sm:px-4">{m.name}</td>
+                          <td className="px-3 py-3.5 sm:px-4">
+                            {m.availability ? (
+                              <StatusBadge status={m.availability} />
+                            ) : (
+                              <span className="text-ink-faint">По запросу</span>
+                            )}
                           </td>
                         </tr>
                       ))}
@@ -86,7 +81,7 @@ export function CatalogPage() {
                 </div>
               </div>
 
-              <div className="mt-4 grid gap-3 sm:grid-cols-2 md:hidden">
+              <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                 {list.map((machine) => (
                   <MachineCard key={machine.slug} machine={machine} />
                 ))}
@@ -95,17 +90,6 @@ export function CatalogPage() {
           );
         })}
       </div>
-
-      <section className="mt-14 hidden sm:mt-16 md:block">
-        <h2 className="font-display text-2xl font-semibold uppercase text-white sm:text-3xl">
-          Все модели
-        </h2>
-        <div className="mt-6 grid gap-3 sm:grid-cols-2 sm:gap-4 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
-          {machines.map((machine) => (
-            <MachineCard key={machine.slug} machine={machine} />
-          ))}
-        </div>
-      </section>
     </div>
   );
 }
