@@ -53,13 +53,15 @@
   --leading-body: 1.65;
   --leading-tight: 1.15;
 
-  /* Motion — micro 150–220, panels 250–320 */
+  /* Motion — micro 150–220, panels 250–320, expand phases synced */
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-soft: cubic-bezier(0.33, 1, 0.68, 1);
   --dur-micro: 180ms;
   --dur-ui: 220ms;
   --dur-panel: 280ms;
   --dur-enter: 400ms;
+  --dur-expand-x: 320ms;
+  --dur-expand-y: 360ms;
 
   /* Legacy aliases used in transitions */
   --dur-fast: var(--dur-micro);
@@ -510,7 +512,8 @@
   .motion-expand-x {
     display: grid;
     grid-template-columns: 0fr;
-    transition: grid-template-columns var(--dur-panel) var(--ease-out);
+    min-width: 0;
+    transition: grid-template-columns var(--dur-expand-x) var(--ease-out);
   }
 
   .motion-expand-x.is-open {
@@ -520,7 +523,8 @@
   .motion-expand-y {
     display: grid;
     grid-template-rows: 0fr;
-    transition: grid-template-rows var(--dur-panel) var(--ease-out);
+    width: 100%;
+    transition: grid-template-rows var(--dur-expand-y) var(--ease-out);
   }
 
   .motion-expand-y.is-open {
@@ -533,27 +537,48 @@
     overflow: hidden;
   }
 
-  .menu-panel-body {
-    opacity: 0;
-    transform: translate3d(0, -6px, 0);
+  /* Stable icon/label crossfade — no remount flash */
+  .menu-toggle-label {
     transition:
-      opacity var(--dur-panel) var(--ease-out),
-      transform var(--dur-panel) var(--ease-out);
+      opacity var(--dur-micro) var(--ease-out),
+      visibility var(--dur-micro) var(--ease-out);
+  }
+
+  .menu-toggle-label.is-hidden {
+    opacity: 0;
+    visibility: hidden;
     pointer-events: none;
   }
 
-  .menu-panel-body.is-open {
-    opacity: 1;
-    transform: translate3d(0, 0, 0);
-    pointer-events: auto;
+  /* Mobile catalog drill: slide left / slide in from right */
+  .menu-drill {
+    position: relative;
+    overflow: hidden;
   }
 
-  .link-quiet {
-    transition: color var(--dur-micro) var(--ease-out);
+  .menu-drill-pane {
+    transition:
+      transform var(--dur-panel) var(--ease-out),
+      opacity var(--dur-ui) var(--ease-out);
   }
 
-  .link-quiet:hover {
-    color: var(--c-accent);
+  .menu-drill-pane.is-back,
+  .menu-drill-pane.is-forward {
+    position: absolute;
+    inset-inline: 0;
+    top: 0;
+    width: 100%;
+    pointer-events: none;
+  }
+
+  .menu-drill-pane.is-back {
+    transform: translate3d(-18%, 0, 0);
+    opacity: 0;
+  }
+
+  .menu-drill-pane.is-forward {
+    transform: translate3d(24%, 0, 0);
+    opacity: 0;
   }
 
   .chip-shell {
@@ -562,6 +587,25 @@
 
   .chip-shell:hover {
     box-shadow: 10px 10px 0 0 rgba(23, 32, 39, 0.1);
+  }
+
+  /* Avoid shadow tween fighting open/close motion */
+  .chip-shell.is-busy,
+  .chip-shell.is-busy:hover {
+    transition: none;
+    box-shadow: 8px 8px 0 0 rgba(23, 32, 39, 0.08);
+  }
+
+  .menu-width-tween {
+    transition: width var(--dur-expand-x) var(--ease-out);
+  }
+
+  .link-quiet {
+    transition: color var(--dur-micro) var(--ease-out);
+  }
+
+  .link-quiet:hover {
+    color: var(--c-accent);
   }
 
   .skip-link {
@@ -678,12 +722,13 @@
 
   .motion-expand-x,
   .motion-expand-y,
-  .menu-panel-body {
+  .menu-toggle-label,
+  .menu-drill-pane,
+  .menu-width-tween {
     transition: none !important;
   }
 
-  .page-enter,
-  .menu-panel-body {
+  .page-enter {
     animation: none !important;
     opacity: 1 !important;
     transform: none !important;
