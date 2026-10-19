@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { hasEmail, hasPhone, siteConfig } from "@/lib/siteConfig";
 import { categories } from "@/data/categories";
+import { CompanyRequisites } from "@/components/CompanyRequisites";
 
 export function Footer() {
   const { company } = siteConfig;
@@ -15,6 +16,9 @@ export function Footer() {
           <p className="mt-4 max-w-sm text-sm leading-relaxed text-ink-muted">
             {siteConfig.tagline}.
           </p>
+          <div className="mt-6">
+            <CompanyRequisites compact />
+          </div>
         </div>
 
         <div>
@@ -58,8 +62,8 @@ export function Footer() {
               </Link>
             </li>
             <li>
-              <Link className="link-quiet" to="/privacy">
-                Конфиденциальность
+              <Link className="link-quiet" to="/contacts">
+                Контакты
               </Link>
             </li>
           </ul>
@@ -67,9 +71,18 @@ export function Footer() {
 
         <div>
           <h3 className="text-xs font-semibold uppercase tracking-[0.14em] text-ink-faint">
-            Контакты
+            Документы
           </h3>
           <ul className="mt-5 space-y-3 text-sm text-ink-soft">
+            {siteConfig.legalNav.map((item) => (
+              <li key={item.href}>
+                <Link className="link-quiet" to={item.href}>
+                  {item.label}
+                </Link>
+              </li>
+            ))}
+          </ul>
+          <ul className="mt-6 space-y-2 text-sm text-ink-soft">
             {hasEmail() ? (
               <li>
                 <a className="link-quiet" href={`mailto:${company.email}`}>
@@ -84,18 +97,13 @@ export function Footer() {
                 </a>
               </li>
             ) : null}
-            {!hasEmail() && !hasPhone() ? (
-              <li>
-                <Link className="link-quiet" to="/contacts">
-                  Форма заявки
-                </Link>
-              </li>
-            ) : null}
           </ul>
         </div>
       </div>
       <div className="border-t border-line px-4 py-6 text-center text-xs tracking-wide text-ink-faint">
-        © {new Date().getFullYear()} {siteConfig.brand}. Каталог оборудования SZGH.
+        © {new Date().getFullYear()} {siteConfig.brand}
+        {company.legalName ? ` · ${company.legalName}` : ""}. Каталог оборудования
+        SZGH.
       </div>
     </footer>
   );

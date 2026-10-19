@@ -2,6 +2,7 @@ import { Outlet } from "react-router-dom";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { MobileCtaBar } from "@/components/MobileCtaBar";
+import { CookieBanner } from "@/components/CookieBanner";
 import { MobileUiProvider } from "@/contexts/MobileUiContext";
 
 export function Layout() {
@@ -18,6 +19,7 @@ export function Layout() {
         <Footer />
         <MobileCtaBar />
       </div>
+      <CookieBanner />
     </MobileUiProvider>
   );
 }

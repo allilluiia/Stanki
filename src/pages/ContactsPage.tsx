@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { Mail, Phone, MapPin } from "lucide-react";
 import { LeadForm, type LeadType } from "@/components/LeadForm";
+import { CompanyRequisites } from "@/components/CompanyRequisites";
 import { getMachineBySlug } from "@/data/machines";
 import { hasEmail, hasPhone, siteConfig } from "@/lib/siteConfig";
 
@@ -60,17 +61,28 @@ export function ContactsPage() {
             </a>
           ) : null}
 
-          {company.address ? (
+          {company.address || company.legalAddress ? (
             <div className="panel flex items-start gap-4 rounded-none p-5">
               <MapPin className="mt-0.5 h-5 w-5 text-mark" />
               <div>
                 <div className="text-xs uppercase tracking-[0.14em] text-ink-faint">
                   Адрес
                 </div>
-                <div className="text-sm text-ink">{company.address}</div>
+                <div className="text-sm text-ink">
+                  {company.address ?? company.legalAddress}
+                </div>
               </div>
             </div>
           ) : null}
+
+          <div className="panel rounded-none p-6">
+            <div className="text-xs uppercase tracking-[0.14em] text-ink-faint">
+              Реквизиты
+            </div>
+            <div className="mt-4">
+              <CompanyRequisites />
+            </div>
+          </div>
 
           <div className="panel rounded-none p-6 text-sm text-ink-muted">
             Чертёж детали или ТЗ можно приложить к ответу на наше письмо после
@@ -87,11 +99,17 @@ export function ContactsPage() {
             .
           </div>
 
-          <p className="text-xs text-ink-faint">
-            <Link to="/privacy" className="text-ink-muted hover:text-ink hover:underline">
-              Политика конфиденциальности
-            </Link>
-          </p>
+          <div className="flex flex-wrap gap-x-4 gap-y-2 text-xs text-ink-faint">
+            {siteConfig.legalNav.map((item) => (
+              <Link
+                key={item.href}
+                to={item.href}
+                className="text-ink-muted hover:text-ink hover:underline"
+              >
+                {item.label}
+              </Link>
+            ))}
+          </div>
         </div>
 
         <LeadForm

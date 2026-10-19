@@ -11,6 +11,9 @@ import { AboutSzghPage } from "@/pages/AboutSzghPage";
 import { AboutPage } from "@/pages/AboutPage";
 import { ContactsPage } from "@/pages/ContactsPage";
 import { PrivacyPage } from "@/pages/PrivacyPage";
+import { CookiesPage } from "@/pages/CookiesPage";
+import { TermsPage } from "@/pages/TermsPage";
+import { OfferPage } from "@/pages/OfferPage";
 import { NotFoundPage } from "@/pages/NotFoundPage";
 
 const basename =
@@ -34,6 +37,9 @@ export default function App() {
           <Route path="about" element={<AboutPage />} />
           <Route path="contacts" element={<ContactsPage />} />
           <Route path="privacy" element={<PrivacyPage />} />
+          <Route path="cookies" element={<CookiesPage />} />
+          <Route path="terms" element={<TermsPage />} />
+          <Route path="offer" element={<OfferPage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Route>
       </Routes>

@@ -311,24 +311,47 @@ export function LeadForm({
           </p>
         </div>
 
-        <div>
-          <label className="flex items-start gap-3 text-sm text-ink-muted">
+        <div className="border border-line bg-canvas-soft/80 px-3 py-3 sm:px-4">
+          <label
+            htmlFor={`${uid}-consent`}
+            className="flex cursor-pointer items-start gap-3 text-sm leading-snug text-ink-muted"
+          >
             <input
+              id={`${uid}-consent`}
+              name="consent"
               type="checkbox"
-              className="mt-1 h-4 w-4 accent-accent"
+              required
+              className="mt-0.5 h-5 w-5 shrink-0 accent-accent"
               checked={consent}
-              onChange={(e) => setConsent(e.target.checked)}
+              onChange={(e) => {
+                setConsent(e.target.checked);
+                if (fieldErrors.consent) {
+                  setFieldErrors((prev) => {
+                    const next = { ...prev };
+                    delete next.consent;
+                    return next;
+                  });
+                }
+              }}
               aria-invalid={Boolean(fieldErrors.consent)}
+              aria-describedby={fieldErrors.consent ? `${uid}-consent-err` : undefined}
             />
             <span>
-              Согласен на обработку персональных данных.{" "}
-              <Link to="/privacy" className="text-mark hover:underline">
-                Политика конфиденциальности
+              Я даю согласие на обработку персональных данных на условиях{" "}
+              <Link
+                to="/privacy"
+                className="font-medium text-accent underline-offset-2 hover:underline"
+                onClick={(e) => e.stopPropagation()}
+              >
+                Политики обработки персональных данных
               </Link>
+              .
             </span>
           </label>
           {fieldErrors.consent ? (
-            <p className="mt-1 text-xs text-red-700">{fieldErrors.consent}</p>
+            <p id={`${uid}-consent-err`} className="mt-2 text-xs text-red-700">
+              {fieldErrors.consent}
+            </p>
           ) : null}
         </div>
 

@@ -1,8 +1,9 @@
 import { Link } from "react-router-dom";
-import { hasEmail, hasPhone, siteConfig } from "@/lib/siteConfig";
+import { CompanyRequisites } from "@/components/CompanyRequisites";
+import { siteConfig } from "@/lib/siteConfig";
 
 export function AboutPage() {
-  const { company, claims } = siteConfig;
+  const { claims } = siteConfig;
 
   const activities = [
     claims.machineSelection && "Подбор станков с ЧПУ под задачу производства",
@@ -48,32 +49,8 @@ export function AboutPage() {
             Оставьте заявку через форму на сайте. Укажите организацию, задачу и
             интересующую модель — ответим на указанный email.
           </p>
-          <div className="mt-5 space-y-1 text-sm">
-            {hasEmail() ? (
-              <a
-                className="block text-mark hover:underline"
-                href={`mailto:${company.email}`}
-              >
-                {company.email}
-              </a>
-            ) : null}
-            {hasPhone() ? (
-              <a
-                className="block text-ink-soft hover:text-ink"
-                href={company.phoneHref}
-              >
-                {company.phone}
-              </a>
-            ) : null}
-            {company.address ? (
-              <p className="text-ink-faint">{company.address}</p>
-            ) : null}
-            {company.inn ? (
-              <p className="text-ink-faint">ИНН {company.inn}</p>
-            ) : null}
-            {company.ogrn ? (
-              <p className="text-ink-faint">ОГРН {company.ogrn}</p>
-            ) : null}
+          <div className="mt-5">
+            <CompanyRequisites />
           </div>
         </div>
       </div>
