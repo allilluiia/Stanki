@@ -13,7 +13,7 @@ export function CookiesPage() {
     >
       <LegalSection title="1. Что такое cookie">
         <p>
-          Cookie — небольшие текстовые файлы, которые сайт может сохранять в
+          Cookie - небольшие текстовые файлы, которые сайт может сохранять в
           браузере. Также сайт может использовать localStorage и аналогичные
           механизмы для хранения служебных отметок (например, вашего выбора в
           баннере cookie).
@@ -24,12 +24,12 @@ export function CookiesPage() {
         <p>В текущей версии сайта применяются:</p>
         <ul className="list-disc space-y-1 pl-5">
           <li>
-            <strong className="font-semibold text-ink">Необходимые</strong> —
+            <strong className="font-semibold text-ink">Необходимые</strong> -
             сохранение выбора в cookie-баннере (localStorage), обеспечение
             стабильной работы интерфейса и безопасности форм;
           </li>
           <li>
-            <strong className="font-semibold text-ink">Функциональные</strong> —
+            <strong className="font-semibold text-ink">Функциональные</strong> -
             запоминание отдельных настроек отображения при их появлении на
             сайте.
           </li>
@@ -54,7 +54,7 @@ export function CookiesPage() {
         <p>
           Вы можете принять все указанные категории или ограничиться
           необходимыми через баннер на сайте. Также можно очистить cookie и
-          данные сайтов в настройках браузера — в этом случае баннер может
+          данные сайтов в настройках браузера - в этом случае баннер может
           появиться снова.
         </p>
       </LegalSection>

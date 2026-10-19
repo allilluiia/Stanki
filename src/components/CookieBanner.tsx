@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 
 const STORAGE_KEY = "stanki-cookie-consent";
@@ -24,15 +24,14 @@ function writeConsent(value: ConsentValue) {
 }
 
 /**
- * Cookie notice — shown until the visitor chooses an option.
+ * Cookie notice - shown until the visitor chooses an option.
  * Site currently uses only essential cookies / localStorage for consent itself.
  */
 export function CookieBanner() {
-  const [visible, setVisible] = useState(false);
-
-  useEffect(() => {
-    setVisible(readConsent() === null);
-  }, []);
+  const [visible, setVisible] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return readConsent() === null;
+  });
 
   function choose(value: ConsentValue) {
     writeConsent(value);
@@ -56,7 +55,7 @@ export function CookieBanner() {
           <p className="mt-2 text-sm leading-relaxed text-ink-muted">
             Сайт использует необходимые технические данные (в т.ч. localStorage
             для сохранения вашего выбора) и может применять cookie для корректной
-            работы. Подробнее — в{" "}
+            работы. Подробнее - в{" "}
             <Link to="/cookies" className="text-accent underline-offset-2 hover:underline">
               политике cookie
             </Link>

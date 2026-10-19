@@ -20,7 +20,7 @@ const tasks: { id: CategoryId; title: string; hint: string }[] = [
   {
     id: "milling",
     title: "Фрезерование",
-    hint: "Оснастка, прототипы, мелкосерийные детали",
+    hint: "Оснастка, алюминий, сверление и нарезание резьбы",
   },
   {
     id: "vmc",
@@ -44,7 +44,7 @@ export function SolutionsPage() {
     <div className="container-page page-start">
       <h1 className="section-title">Подбор станка</h1>
       <p className="section-lead">
-        Выберите тип задачи — покажем подходящие модели SZGH и примем заявку на
+        Выберите тип задачи - покажем подходящие модели SZGH и примем заявку на
         подбор.
       </p>
 

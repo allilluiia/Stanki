@@ -62,9 +62,14 @@ export function MachinePage() {
                   {machine.shortDescription}
                 </p>
               ) : null}
+              {machine.dataStatus === "verified" ? (
+                <p className="mt-3 text-xs text-ink-faint">
+                  Характеристики по данным производителя SZGH
+                </p>
+              ) : null}
               <div className="mt-6 flex w-full flex-col gap-3 sm:flex-row">
                 <Link
-                  to={`/contacts?type=quote&machine=${machine.slug}`}
+                  to={`/contacts?type=quote&machine=${machine.slug}#lead`}
                   className="btn-primary w-full sm:w-auto"
                 >
                   Получить КП
@@ -79,6 +84,8 @@ export function MachinePage() {
               label={machine.model}
               categoryId={machine.categoryId}
               media={machine.media}
+              priority
+              hideCaption
               className="aspect-[16/11] w-full shadow-frame"
             />
           </div>
@@ -209,7 +216,10 @@ export function MachinePage() {
             </section>
           </div>
 
-          <div id="lead" className="lg:sticky lg:top-28 lg:self-start">
+          <div
+            id="lead"
+            className="scroll-mt-[calc(var(--header-offset)+1rem)] lg:sticky lg:top-28 lg:self-start"
+          >
             <LeadForm
               key={machine.slug}
               type="quote"

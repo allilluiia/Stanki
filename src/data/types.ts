@@ -82,6 +82,8 @@ export interface Category {
   id: CategoryId;
   slug: string;
   title: string;
+  /** Short label for compact nav (mega menu, chips) */
+  navTitle: string;
   description: string;
   /** Normalized comparison keys for this category (labels for UI) */
   comparisonFields: { key: keyof MachineCompare; label: string }[];

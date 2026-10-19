@@ -8,7 +8,7 @@ export function AboutSzghPage() {
     <div className="container-page page-start">
       <h1 className="section-title">О SZGH</h1>
       <p className="section-lead">
-        SZGH — производитель станков с ЧПУ и управляющей электроники.{" "}
+        SZGH - производитель станков с ЧПУ и управляющей электроники.{" "}
         {siteConfig.brand} представляет линейку оборудования в каталоге и принимает
         заявки на коммерческие предложения.
       </p>
@@ -61,7 +61,7 @@ export function AboutSzghPage() {
           },
           {
             title: "Оборудование",
-            text: "Токарные станки, ОЦ и токарно-фрезерные центры в каталоге.",
+            text: "Токарные, фрезерные, VMC, токарно-фрезерные и портальные центры в каталоге.",
           },
           {
             title: "Документация",
@@ -81,7 +81,7 @@ export function AboutSzghPage() {
         <Link to="/catalog" className="btn-primary">
           Каталог SZGH
         </Link>
-        <Link to="/contacts?type=quote" className="btn-secondary">
+        <Link to="/contacts?type=quote#lead" className="btn-secondary">
           Получить КП
         </Link>
       </div>

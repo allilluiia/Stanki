@@ -51,7 +51,7 @@ export function ServicePage() {
     },
     claims.documentationOnRequest && {
       title: "Документация",
-      text: "Datasheet, руководства и схемы — по запросу.",
+      text: "Datasheet, руководства и схемы - по запросу.",
       icon: FileText,
     },
   ].filter(Boolean) as {
@@ -64,7 +64,7 @@ export function ServicePage() {
     <div className="container-page page-start">
       <h1 className="section-title">Сервис</h1>
       <p className="section-lead">
-        Сопровождение сделки по станку SZGH. Ниже — только подтверждённые этапы
+        Сопровождение сделки по станку SZGH. Ниже - только подтверждённые этапы
         работы. Дополнительные услуги согласуются в договоре.
       </p>
 
@@ -89,7 +89,7 @@ export function ServicePage() {
         </div>
       ) : (
         <p className="mt-8 text-sm text-ink-muted">
-          Оставьте заявку — состав услуг согласуем в коммерческом предложении.
+          Оставьте заявку - состав услуг согласуем в коммерческом предложении.
         </p>
       )}
 
@@ -98,7 +98,7 @@ export function ServicePage() {
           Заявка в сервис
         </h2>
         <p className="mt-3 max-w-3xl text-sm leading-relaxed text-ink-muted sm:text-base">
-          Опишите модель, серийный номер (если есть) и задачу — ответим на
+          Опишите модель, серийный номер (если есть) и задачу - ответим на
           указанный в форме email.
         </p>
         <div className="mt-6 flex flex-wrap gap-3">

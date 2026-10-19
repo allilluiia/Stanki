@@ -34,6 +34,7 @@ export function MachineCard({
             label={machine.model}
             categoryId={machine.categoryId}
             media={machine.media}
+            hideCaption
             className="aspect-[4/3] border-0"
           />
         </div>
@@ -49,11 +50,26 @@ export function MachineCard({
           ) : (
             <div className="flex-1" />
           )}
+          {!dense && machine.heroMetrics.length > 0 ? (
+            <dl className="mt-4 grid grid-cols-2 gap-x-3 gap-y-2 border-t border-line-soft pt-4">
+              {machine.heroMetrics.slice(0, 4).map((m) => (
+                <div key={m.label}>
+                  <dt className="text-[10px] font-semibold uppercase tracking-[0.1em] text-ink-faint">
+                    {m.label}
+                  </dt>
+                  <dd className="mt-0.5 text-sm font-medium text-ink">
+                    {m.value}
+                    {m.unit ? ` ${m.unit}` : ""}
+                  </dd>
+                </div>
+              ))}
+            </dl>
+          ) : null}
         </div>
       </Link>
       <div className="grid grid-cols-2 border-t border-line">
         <Link
-          to={`/contacts?type=quote&machine=${machine.slug}`}
+          to={`/contacts?type=quote&machine=${machine.slug}#lead`}
           className="inline-flex min-h-11 items-center justify-center bg-brand px-2 text-center text-[11px] font-semibold uppercase tracking-[0.1em] text-surface-muted transition-colors duration-180 ease-out hover:bg-accent-hover"
         >
           Запросить КП

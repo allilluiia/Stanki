@@ -20,7 +20,7 @@ export function AboutPage() {
     <div className="container-page page-start">
       <h1 className="section-title">О компании {siteConfig.brand}</h1>
       <p className="section-lead">
-        {siteConfig.brand} — B2B-поставщик металлообрабатывающего оборудования
+        {siteConfig.brand} - B2B-поставщик металлообрабатывающего оборудования
         SZGH для промышленных предприятий.
       </p>
 
@@ -47,7 +47,7 @@ export function AboutPage() {
           </h2>
           <p className="mt-3 text-sm leading-relaxed text-ink-muted">
             Оставьте заявку через форму на сайте. Укажите организацию, задачу и
-            интересующую модель — ответим на указанный email.
+            интересующую модель - ответим на указанный email.
           </p>
           <div className="mt-5">
             <CompanyRequisites />

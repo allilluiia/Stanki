@@ -55,7 +55,7 @@ export function DocsPage() {
             </div>
 
             <Link
-              to={`/contacts?type=quote&machine=${machine.slug}`}
+              to={`/contacts?type=quote&machine=${machine.slug}#lead`}
               className="btn-secondary mt-5 inline-flex"
             >
               Запросить комплект документов

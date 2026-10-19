@@ -2,13 +2,14 @@ import { Link } from "react-router-dom";
 import { hasEmail, hasPhone, siteConfig } from "@/lib/siteConfig";
 import { categories } from "@/data/categories";
 import { CompanyRequisites } from "@/components/CompanyRequisites";
+import { resolveMediaUrl } from "@/lib/media";
 
 export function Footer() {
-  const { company } = siteConfig;
+  const { company, developer } = siteConfig;
 
   return (
     <footer className="border-t border-line bg-surface pb-[env(safe-area-inset-bottom)] lg:pb-0">
-      <div className="container-page grid gap-10 py-16 sm:grid-cols-2 sm:gap-8 lg:grid-cols-4 lg:gap-10 lg:py-20">
+      <div className="container-page grid gap-12 py-20 sm:grid-cols-2 sm:gap-10 lg:grid-cols-4 lg:gap-12 lg:py-24">
         <div className="sm:col-span-2 lg:col-span-1">
           <div className="font-display text-2xl font-bold tracking-tight text-ink">
             {siteConfig.brand}
@@ -28,8 +29,8 @@ export function Footer() {
           <ul className="mt-5 space-y-3 text-sm text-ink-soft">
             {categories.map((c) => (
               <li key={c.id}>
-                <Link className="link-quiet" to={`/catalog/${c.slug}`}>
-                  {c.title}
+                <Link className="link-quiet" to={`/catalog#${c.slug}`}>
+                  {c.navTitle}
                 </Link>
               </li>
             ))}
@@ -100,10 +101,34 @@ export function Footer() {
           </ul>
         </div>
       </div>
-      <div className="border-t border-line px-4 py-6 text-center text-xs tracking-wide text-ink-faint">
-        © {new Date().getFullYear()} {siteConfig.brand}
-        {company.legalName ? ` · ${company.legalName}` : ""}. Каталог оборудования
-        SZGH.
+      <div className="border-t border-line">
+        <div className="container-page flex flex-col items-center justify-between gap-4 py-6 sm:flex-row sm:gap-6">
+          <p className="text-center text-xs tracking-wide text-ink-faint sm:text-left">
+            © {new Date().getFullYear()} {siteConfig.brand}
+            {company.legalName ? ` · ${company.legalName}` : ""}. Каталог
+            оборудования SZGH.
+          </p>
+          <a
+            href={developer.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group inline-flex items-center gap-2.5 text-ink-faint transition-colors duration-180 ease-out hover:text-ink"
+            aria-label={`${developer.name} - разработка сайта`}
+          >
+            <span className="text-[10px] font-semibold uppercase tracking-[0.12em]">
+              Разработка
+            </span>
+            <img
+              src={resolveMediaUrl(developer.logo)}
+              alt={developer.name}
+              width={40}
+              height={50}
+              className="h-9 w-auto opacity-70 transition-opacity duration-180 ease-out group-hover:opacity-100"
+              loading="lazy"
+              decoding="async"
+            />
+          </a>
+        </div>
       </div>
     </footer>
   );

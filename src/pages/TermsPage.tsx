@@ -9,21 +9,21 @@ export function TermsPage() {
   return (
     <LegalDoc
       title="Пользовательское соглашение"
-      lead={`Правила использования сайта ${siteConfig.brand} — каталога металлообрабатывающего оборудования SZGH.`}
+      lead={`Правила использования сайта ${siteConfig.brand} - каталога металлообрабатывающего оборудования SZGH.`}
       updated={UPDATED}
     >
       <LegalSection title="1. Термины">
         <p>
-          <strong className="font-semibold text-ink">Сайт</strong> — интернет-ресурс{" "}
+          <strong className="font-semibold text-ink">Сайт</strong> - интернет-ресурс{" "}
           {siteConfig.siteUrl}, включая все его страницы, материалы и сервисы.
         </p>
         <p>
-          <strong className="font-semibold text-ink">Администрация / Владелец</strong> —{" "}
+          <strong className="font-semibold text-ink">Администрация / Владелец</strong> -{" "}
           {operatorDisplayName()}, размещающий Сайт и предоставляющий доступ к
           его функциональности.
         </p>
         <p>
-          <strong className="font-semibold text-ink">Пользователь</strong> — любое
+          <strong className="font-semibold text-ink">Пользователь</strong> - любое
           лицо, осуществляющее доступ к Сайту.
         </p>
       </LegalSection>
@@ -33,7 +33,7 @@ export function TermsPage() {
           Настоящее Соглашение регулирует порядок использования Сайта.
           Просмотр материалов, отправка заявок и иное использование Сайта
           означает согласие Пользователя с условиями Соглашения. Если вы не
-          согласны — прекратите использование Сайта.
+          согласны - прекратите использование Сайта.
         </p>
       </LegalSection>
 
@@ -82,7 +82,7 @@ export function TermsPage() {
           принадлежат Администрации либо используются на законном основании.
           Товарные знаки и обозначения SZGH принадлежат соответствующим
           правообладателям. Использование материалов Сайта допускается для
-          личного ознакомления; иное использование — только с письменного
+          личного ознакомления; иное использование - только с письменного
           согласия правообладателя.
         </p>
       </LegalSection>
@@ -107,7 +107,7 @@ export function TermsPage() {
           <Link to="/privacy" className="text-accent hover:underline">
             Политикой обработки персональных данных
           </Link>
-          , использование cookie —{" "}
+          , использование cookie -{" "}
           <Link to="/cookies" className="text-accent hover:underline">
             Политикой cookie
           </Link>

@@ -29,4 +29,9 @@ dist-ssr
 mail_log.txt
 __MACOSX
 *.pem
-*.key.github/workflows/
+*.key
+*.original.png
+.github/workflows/
+
+# Original factory photos before cutout
+public/media/machines/*.orig

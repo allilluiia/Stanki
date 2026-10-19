@@ -1,6 +1,6 @@
 /**
  * Central business / contact / legal configuration.
- * Prefer VITE_COMPANY_* env vars in production; leave empty until verified —
+ * Prefer VITE_COMPANY_* env vars in production; leave empty until verified -
  * UI hides missing optional contact fields, legal pages still render structure.
  */
 
@@ -15,7 +15,7 @@ export const siteConfig = {
   brand: "Stanki",
   tagline: "Станки с ЧПУ SZGH для промышленного производства",
   description:
-    "Каталог токарных станков, обрабатывающих центров и токарно-фрезерных центров SZGH. Подбор оборудования и коммерческие предложения для предприятий.",
+    "Каталог станков с ЧПУ SZGH: токарные, фрезерные, VMC, токарно-фрезерные и портальные центры. Подбор оборудования и коммерческие предложения для предприятий.",
 
   /** Public site URL used in legal documents */
   siteUrl: env("VITE_SITE_URL") ?? "https://stanki.example",
@@ -72,6 +72,12 @@ export const siteConfig = {
     { label: "Публичная оферта", href: "/offer" },
   ],
 
+  developer: {
+    name: "VA Lab",
+    url: "https://valaboratory.ru/",
+    logo: "/media/valab-logo.png",
+  },
+
   /** Demo form mode when no mail endpoint is configured (e.g. GitHub Pages) */
   form: {
     demoMode:
@@ -103,7 +109,7 @@ export function contactFallbackText() {
   }
   if (hasEmail()) return `Напишите на ${siteConfig.company.email}.`;
   if (hasPhone()) return `Позвоните ${siteConfig.company.phone}.`;
-  return "Оставьте заявку через форму — мы ответим на указанный email.";
+  return "Оставьте заявку через форму - мы ответим на указанный email.";
 }
 
 /** Lines for footer / contacts / legal docs */

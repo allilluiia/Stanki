@@ -24,6 +24,20 @@ const otherNav = siteConfig.nav.filter((item) => item.href !== "/catalog");
 const EXPAND_X_MS = 320;
 const EXPAND_Y_MS = 360;
 const DRILL_MS = 280;
+const DESK_TOGGLE_CLOSED = "9.75rem";
+const DESK_TOGGLE_OPEN = "3.75rem";
+
+function remPx(rem: number) {
+  const root = parseFloat(getComputedStyle(document.documentElement).fontSize);
+  return rem * (Number.isFinite(root) && root > 0 ? root : 16);
+}
+
+function measureDeskOpenWidth(panel: HTMLElement, toggleOpenPx: number) {
+  const nav = panel.querySelector("nav");
+  if (!nav) return null;
+  const w = Math.ceil(nav.scrollWidth + toggleOpenPx);
+  return w > 280 ? w : null;
+}
 
 function BrandMark({ className }: { className?: string }) {
   return (
@@ -52,8 +66,12 @@ export function Header() {
   const navigate = useNavigate();
   const mobileOpenRef = useRef<HTMLButtonElement>(null);
   const mobilePanelRef = useRef<HTMLDivElement>(null);
+  const logoMobileRef = useRef<HTMLAnchorElement>(null);
+  const logoDeskRef = useRef<HTMLAnchorElement>(null);
   const deskToggleRef = useRef<HTMLButtonElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
+  /** Target open width of the desk chip — set before open so width can tween cleanly. */
+  const [deskBarWidth, setDeskBarWidth] = useState<number | null>(null);
   const searchId = useId();
   const deskSearchId = useId();
   const mobilePhase = usePhasedExpand(menuOpen, EXPAND_X_MS, EXPAND_Y_MS);
@@ -61,6 +79,73 @@ export function Header() {
   const mobileDrill = usePresence(Boolean(drillCatId), DRILL_MS);
   const deskNav = usePresence(deskOpen, EXPAND_X_MS);
   const deskCat = usePresence(deskOpen && catalogOpen, EXPAND_Y_MS);
+
+  useEffect(() => {
+    if (!deskNav.mounted) setDeskBarWidth(null);
+  }, [deskNav.mounted]);
+
+  /** Catalog jump-nav switches to 2×3 while desk menu is open */
+  useEffect(() => {
+    document.documentElement.classList.toggle("is-desk-nav-open", deskOpen);
+    return () => document.documentElement.classList.remove("is-desk-nav-open");
+  }, [deskOpen]);
+
+  /** Mobile menu open — jump hides (no gap left between chips) */
+  useEffect(() => {
+    document.documentElement.classList.toggle("is-mobile-nav-open", menuOpen);
+    return () => document.documentElement.classList.remove("is-mobile-nav-open");
+  }, [menuOpen]);
+
+  /** Live logo/menu chip widths → catalog jump sits in the gap between them */
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 768px)");
+    const root = document.documentElement;
+
+    const publish = () => {
+      const logo = mq.matches ? logoDeskRef.current : logoMobileRef.current;
+      const menu = mq.matches ? panelRef.current : mobilePanelRef.current;
+      if (logo) {
+        const w = Math.round(logo.getBoundingClientRect().width);
+        if (w > 0) root.style.setProperty("--header-logo-live-w", `${w}px`);
+      }
+      if (menu) {
+        const w = Math.round(menu.getBoundingClientRect().width);
+        if (w > 0) root.style.setProperty("--header-menu-live-w", `${w}px`);
+      }
+    };
+
+    publish();
+    const ro = new ResizeObserver(publish);
+    for (const el of [
+      logoMobileRef.current,
+      logoDeskRef.current,
+      mobilePanelRef.current,
+      panelRef.current,
+    ]) {
+      if (el) ro.observe(el);
+    }
+    mq.addEventListener("change", publish);
+    window.addEventListener("resize", publish);
+    return () => {
+      ro.disconnect();
+      mq.removeEventListener("change", publish);
+      window.removeEventListener("resize", publish);
+      root.style.removeProperty("--header-logo-live-w");
+      root.style.removeProperty("--header-menu-live-w");
+    };
+  }, [
+    deskBarWidth,
+    deskNav.visible,
+    deskCat.mounted,
+    menuOpen,
+    mobilePhase.wide,
+  ]);
+
+  const prepareDeskOpenWidth = () => {
+    if (!panelRef.current) return;
+    const next = measureDeskOpenWidth(panelRef.current, remPx(3.75));
+    if (next != null) setDeskBarWidth(next);
+  };
 
   const drillCategory = useMemo(
     () => categories.find((c) => c.id === drillCatId) ?? null,
@@ -97,6 +182,12 @@ export function Header() {
   useEffect(() => {
     if (!catalogOpen) setDrillCatId(null);
   }, [catalogOpen]);
+
+  useEffect(() => {
+    if (!drillCatId || !mobilePanelRef.current) return;
+    const body = mobilePanelRef.current.querySelector(".menu-drill-sheet-body");
+    body?.scrollTo({ top: 0, behavior: "auto" });
+  }, [drillCatId]);
 
   useEffect(() => {
     if (!deskOpen && !menuOpen) return;
@@ -157,6 +248,7 @@ export function Header() {
   function closeMenus() {
     setMenuOpen(false);
     setDeskOpen(false);
+    setCatalogOpen(false);
   }
 
   function closeAll() {
@@ -177,7 +269,7 @@ export function Header() {
   }
 
   const catalogSearch = (id: string) => (
-    <form onSubmit={submitSearch} className="flex border-b border-line bg-white">
+    <form onSubmit={submitSearch} className="flex h-11 items-stretch border-b border-line bg-white">
       <label className="sr-only" htmlFor={id}>
         Поиск модели
       </label>
@@ -186,12 +278,12 @@ export function Header() {
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         placeholder="Искать модель…"
-        className="min-w-0 flex-1 bg-transparent px-3 py-3 text-sm text-ink outline-none placeholder:text-ink-faint"
+        className="min-w-0 flex-1 bg-transparent px-3 text-sm text-ink outline-none placeholder:text-ink-faint"
         autoComplete="off"
       />
       <button
         type="submit"
-        className="inline-flex h-11 w-11 shrink-0 items-center justify-center bg-brand text-white"
+        className="inline-flex w-11 shrink-0 items-center justify-center bg-brand text-white"
         aria-label="Искать"
       >
         <Search className="h-4 w-4" />
@@ -200,12 +292,14 @@ export function Header() {
   );
 
   const catalogCta = (
-    <div className="grid gap-2 border-t border-line bg-brand p-3 text-white sm:grid-cols-[1fr_auto] sm:items-end sm:p-4">
-      <div>
-        <div className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/70">
+    <div className="grid gap-3 border-t border-line bg-brand p-3 text-white sm:grid-cols-[1fr_auto] sm:items-end sm:gap-4 sm:p-4">
+      <div className="min-w-0">
+        <div className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/75">
           Подбор
         </div>
-        <p className="mt-1 text-sm leading-snug">Станок под задачу производства</p>
+        <p className="mt-1.5 text-sm leading-snug text-white">
+          Станок под задачу производства
+        </p>
       </div>
       <Link
         to="/solutions"
@@ -218,11 +312,11 @@ export function Header() {
     </div>
   );
 
-  /** Desktop mega: categories | models (Abamet-inspired, chip style) */
+  /** Desktop mega: lives inside the menu chip; chip stretches from the right */
   const deskCatalogPanel = (
-    <div className="border border-line bg-canvas-soft">
+    <div className="border-t border-line bg-canvas-soft">
       {catalogSearch(deskSearchId)}
-      <div className="grid sm:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
+      <div className="grid sm:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)]">
         <ul className="border-b border-line sm:border-b-0 sm:border-r sm:border-line">
           {categories.map((cat) => {
             const count = getMachinesByCategory(cat.id).length;
@@ -235,15 +329,20 @@ export function Header() {
                   onFocus={() => setActiveCat(cat.id)}
                   onClick={() => setActiveCat(cat.id)}
                   className={cn(
-                    "flex w-full items-baseline justify-between gap-3 px-3 py-2.5 text-left font-display text-sm font-semibold uppercase tracking-tight transition-colors duration-180 ease-out sm:text-[15px]",
+                    "flex w-full items-center justify-between gap-3 px-3 py-2.5 text-left text-sm font-semibold tracking-tight transition-colors duration-180 ease-out sm:text-[15px]",
                     active
-                      ? "bg-white text-accent"
-                      : "text-ink hover:bg-white hover:text-accent",
+                      ? "bg-white text-ink shadow-[inset_3px_0_0_0_var(--c-brand)]"
+                      : "text-ink-soft hover:bg-white hover:text-ink",
                   )}
                 >
-                  <span>{cat.title}</span>
-                  <span className="font-sans text-xs font-medium text-ink-faint">
-                    [{count}]
+                  <span className="min-w-0 leading-snug">{cat.navTitle}</span>
+                  <span
+                    className={cn(
+                      "shrink-0 font-sans text-xs tabular-nums",
+                      active ? "text-ink-muted" : "text-ink-faint",
+                    )}
+                  >
+                    {count}
                   </span>
                 </button>
               </li>
@@ -253,16 +352,16 @@ export function Header() {
             <Link
               to="/catalog"
               onClick={closeAll}
-              className="flex items-center justify-between gap-3 px-3 py-2.5 text-sm font-semibold uppercase tracking-[0.1em] text-accent transition-colors duration-180 ease-out hover:bg-white hover:text-ink"
+              className="flex items-center justify-between gap-3 border-t border-line-soft px-3 py-2.5 text-xs font-semibold uppercase tracking-[0.1em] text-ink-muted transition-colors duration-180 ease-out hover:bg-white hover:text-ink"
             >
               Весь каталог
-              <ArrowRight className="h-4 w-4 shrink-0" />
+              <ArrowRight className="h-3.5 w-3.5 shrink-0" />
             </Link>
           </li>
         </ul>
 
-        <div className="flex min-h-[14rem] flex-col bg-white">
-          <div className="border-b border-line-soft px-3 py-2.5">
+        <div className="flex h-[20.5rem] flex-col bg-white sm:h-[22rem]">
+          <div className="shrink-0 border-b border-line-soft px-3 py-2.5">
             <Link
               to={`/catalog/${deskActiveCategory?.slug ?? ""}`}
               onClick={closeAll}
@@ -270,13 +369,11 @@ export function Header() {
             >
               {deskActiveCategory?.title}
             </Link>
-            {deskActiveCategory?.description ? (
-              <p className="mt-1 text-xs leading-snug text-ink-faint">
-                {deskActiveCategory.description}
-              </p>
-            ) : null}
+            <p className="mt-1 line-clamp-2 min-h-[2.25rem] text-xs leading-snug text-ink-faint">
+              {deskActiveCategory?.description ?? "\u00a0"}
+            </p>
           </div>
-          <ul className="flex-1 p-1">
+          <ul className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-1 [scrollbar-width:thin]">
             {deskMachines.map((m) => (
               <li key={m.slug}>
                 <Link
@@ -284,11 +381,11 @@ export function Header() {
                   onClick={closeAll}
                   className="flex items-center justify-between gap-2 px-3 py-2.5 transition-colors duration-180 ease-out hover:bg-canvas-soft"
                 >
-                  <span>
+                  <span className="min-w-0">
                     <span className="block font-display text-sm font-semibold tracking-tight text-ink">
                       {m.model}
                     </span>
-                    <span className="mt-0.5 block text-xs text-ink-muted">
+                    <span className="mt-0.5 block truncate text-xs text-ink-muted">
                       {m.name}
                     </span>
                   </span>
@@ -300,7 +397,7 @@ export function Header() {
               <li className="px-3 py-4 text-sm text-ink-faint">Нет моделей в категории</li>
             ) : null}
           </ul>
-          <div className="mt-auto border-t border-line-soft p-2">
+          <div className="mt-auto shrink-0 border-t border-line-soft p-2">
             <Link
               to={`/catalog/${deskActiveCategory?.slug ?? ""}`}
               onClick={closeAll}
@@ -373,7 +470,7 @@ export function Header() {
           </a>
         ) : null}
         <Link
-          to="/contacts?type=quote"
+          to="/contacts?type=quote#lead"
           onClick={closeAll}
           tabIndex={mobilePhase.tall && !mobileCat.visible ? 0 : -1}
           className="btn-primary w-full"
@@ -395,15 +492,16 @@ export function Header() {
               <button
                 type="button"
                 tabIndex={mobileCat.visible && !mobileDrill.visible ? 0 : -1}
-                className="flex w-full min-h-11 items-center justify-between gap-2 border-b border-line-soft px-3 py-3 text-left transition-colors duration-180 ease-out hover:bg-canvas-soft"
+                className="flex w-full min-h-12 items-center justify-between gap-2 border-b border-line-soft px-3 py-3 text-left transition-colors duration-180 ease-out hover:bg-canvas-soft"
                 onClick={() => setDrillCatId(cat.id)}
               >
-                <span>
-                  <span className="block font-display text-sm font-semibold uppercase tracking-tight text-ink">
-                    {cat.title}
+                <span className="min-w-0">
+                  <span className="block text-sm font-semibold tracking-tight text-ink">
+                    {cat.navTitle}
                   </span>
                   <span className="mt-0.5 block text-xs text-ink-faint">
-                    {count} {count === 1 ? "модель" : "модели"}
+                    {count}{" "}
+                    {count === 1 ? "модель" : count < 5 ? "модели" : "моделей"}
                   </span>
                 </span>
                 <ChevronRight className="h-4 w-4 shrink-0 text-ink-muted" />
@@ -421,63 +519,89 @@ export function Header() {
         Весь каталог
         <ArrowRight className="h-4 w-4" />
       </Link>
-      {catalogCta}
+      <div className="space-y-2 border-t border-line bg-canvas-soft p-3">
+        <p className="text-xs leading-snug text-ink-muted">
+          Подберём станок под задачу производства
+        </p>
+        <div className="grid grid-cols-2 gap-2">
+          <Link
+            to="/solutions"
+            onClick={closeAll}
+            tabIndex={mobileCat.visible && !mobileDrill.visible ? 0 : -1}
+            className="inline-flex min-h-11 items-center justify-center border border-line bg-white px-2 text-[11px] font-semibold uppercase tracking-[0.08em] text-ink"
+          >
+            Подбор
+          </Link>
+          <Link
+            to="/contacts?type=quote#lead"
+            onClick={closeAll}
+            tabIndex={mobileCat.visible && !mobileDrill.visible ? 0 : -1}
+            className="btn-primary min-h-11 px-2 text-[11px]"
+          >
+            Получить КП
+          </Link>
+        </div>
+      </div>
     </div>
   );
 
   const mobileCatalogDrill = drillCategory ? (
-    <div className="bg-white">
-      <Link
-        to={`/catalog/${drillCategory.slug}`}
-        onClick={closeAll}
-        tabIndex={mobileDrill.visible ? 0 : -1}
-        className="block border-b border-line bg-canvas-soft px-3 py-3"
-      >
-        <span className="font-display text-sm font-semibold uppercase tracking-tight text-ink">
-          {drillCategory.title}
-        </span>
-        {drillCategory.description ? (
-          <span className="mt-1 block text-xs leading-snug text-ink-muted">
-            {drillCategory.description}
-          </span>
-        ) : null}
-      </Link>
-      <ul>
-        {drillMachines.map((m) => (
-          <li key={m.slug}>
-            <Link
-              to={`/machines/${m.slug}`}
-              onClick={closeAll}
-              tabIndex={mobileDrill.visible ? 0 : -1}
-              className="flex min-h-11 items-center justify-between gap-2 border-b border-line-soft px-3 py-3 transition-colors hover:bg-canvas-soft"
-            >
-              <span>
-                <span className="block font-display text-sm font-semibold tracking-tight text-ink">
-                  {m.model}
-                </span>
-                <span className="mt-0.5 block text-xs text-ink-muted">{m.name}</span>
-              </span>
-              <ChevronRight className="h-4 w-4 shrink-0 text-ink-faint" />
-            </Link>
-          </li>
-        ))}
-      </ul>
-      <div className="space-y-2 p-3">
+    <div className="menu-drill-sheet bg-white">
+      <div className="menu-drill-sheet-body">
         <Link
           to={`/catalog/${drillCategory.slug}`}
           onClick={closeAll}
           tabIndex={mobileDrill.visible ? 0 : -1}
-          className="btn-secondary w-full"
+          className="block border-b border-line bg-canvas-soft px-3 py-3"
         >
-          Все модели категории
+          <span className="font-display text-sm font-semibold uppercase tracking-tight text-ink">
+            {drillCategory.navTitle}
+          </span>
+          {drillCategory.description ? (
+            <span className="mt-1 block line-clamp-2 text-xs leading-snug text-ink-muted">
+              {drillCategory.description}
+            </span>
+          ) : null}
         </Link>
+        <ul>
+          {drillMachines.map((m) => (
+            <li key={m.slug}>
+              <Link
+                to={`/machines/${m.slug}`}
+                onClick={closeAll}
+                tabIndex={mobileDrill.visible ? 0 : -1}
+                className="flex min-h-12 items-center justify-between gap-2 border-b border-line-soft px-3 py-2.5 transition-colors hover:bg-canvas-soft"
+              >
+                <span className="min-w-0">
+                  <span className="block font-display text-sm font-semibold tracking-tight text-ink">
+                    {m.model}
+                  </span>
+                  <span className="mt-0.5 block truncate text-xs text-ink-muted">
+                    {m.name}
+                  </span>
+                </span>
+                <ChevronRight className="h-4 w-4 shrink-0 text-ink-faint" />
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </div>
+      <div className="menu-drill-sheet-footer">
         <Link
-          to={`/contacts?type=quote`}
+          to="/contacts?type=quote#lead"
           onClick={closeAll}
           tabIndex={mobileDrill.visible ? 0 : -1}
           className="btn-primary w-full"
         >
           Получить КП
+        </Link>
+        <Link
+          to={`/catalog/${drillCategory.slug}`}
+          onClick={closeAll}
+          tabIndex={mobileDrill.visible ? 0 : -1}
+          className="inline-flex min-h-10 items-center justify-center text-xs font-semibold uppercase tracking-[0.1em] text-accent"
+        >
+          Все модели категории
         </Link>
       </div>
     </div>
@@ -485,6 +609,9 @@ export function Header() {
 
   const showMobileBack = menuOpen && mobilePhase.wide && mobileCat.visible;
   const mobileBackLabel = drillCatId ? "Каталог" : "Меню";
+  /** Soft ceiling only — panel hugs content, no forced full-screen height. */
+  const mobilePanelMaxH =
+    "calc(100dvh - max(0.75rem, var(--safe-top)) - max(0.5rem, env(safe-area-inset-bottom, 0px)) - 0.5rem)";
 
   return (
     <>
@@ -495,9 +622,16 @@ export function Header() {
       {/* Mobile */}
       <div className="pointer-events-none fixed inset-x-0 top-0 z-50 flex items-start justify-between gap-3 edge-chrome pt-[max(0.75rem,var(--safe-top))] md:hidden">
         <Link
+          ref={logoMobileRef}
           to="/"
           className="chip-logo chip-shell pointer-events-auto flex h-12 shrink-0 items-center gap-2 bg-white px-3 shadow-frame"
-          onClick={closeAll}
+          onClick={(e) => {
+            closeAll();
+            if (location.pathname === "/") {
+              e.preventDefault();
+              window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
+            }
+          }}
         >
           <BrandMark className="h-7 w-7" />
           <span className="font-display text-[12px] font-bold uppercase tracking-tight text-ink">
@@ -508,29 +642,28 @@ export function Header() {
         <div
           ref={mobilePanelRef}
           className={cn(
-            "chip-menu chip-shell menu-width-tween pointer-events-auto relative ml-auto overflow-hidden bg-white shadow-frame",
+            "chip-menu chip-shell menu-width-tween pointer-events-auto relative ml-auto flex h-auto flex-col overflow-hidden bg-white shadow-frame",
             (menuOpen || mobilePhase.active) && "is-busy",
+            mobileCat.mounted && "is-catalog-open",
           )}
           style={{
             width: mobilePhase.wide ? "20rem" : "4.75rem",
             maxWidth: "calc(100vw - 9rem)",
+            maxHeight: mobilePhase.active ? mobilePanelMaxH : undefined,
           }}
         >
-          <div className="flex h-12 items-center">
-            <div className="relative min-w-0 flex-1 overflow-hidden">
-              <button
-                type="button"
-                tabIndex={showMobileBack ? 0 : -1}
-                aria-hidden={!showMobileBack}
-                className={cn(
-                  "menu-toggle-label absolute inset-y-0 left-0 inline-flex items-center gap-1 px-3 text-xs font-semibold uppercase tracking-[0.08em] text-ink",
-                  !showMobileBack && "is-hidden",
-                )}
-                onClick={mobileBack}
-              >
-                <ChevronLeft className="h-4 w-4 shrink-0" />
-                {mobileBackLabel}
-              </button>
+          <div className="flex h-12 shrink-0 items-center">
+            <div className="flex min-h-12 min-w-0 flex-1 items-center overflow-hidden">
+              {showMobileBack ? (
+                <button
+                  type="button"
+                  className="inline-flex min-h-12 items-center gap-1 px-3 text-xs font-semibold uppercase tracking-[0.08em] text-ink"
+                  onClick={mobileBack}
+                >
+                  <ChevronLeft className="h-4 w-4 shrink-0" aria-hidden />
+                  {mobileBackLabel}
+                </button>
+              ) : null}
             </div>
 
             <button
@@ -575,7 +708,9 @@ export function Header() {
             </button>
           </div>
 
-          <div className={cn("motion-expand-y", mobilePhase.tall && "is-open")}>
+          <div
+            className={cn("motion-expand-y", mobilePhase.tall && "is-open")}
+          >
             <div className="motion-expand-clip">
               {mobilePhase.active ? (
                 <nav
@@ -601,7 +736,6 @@ export function Header() {
                       )}
                       aria-hidden={!mobileCat.visible}
                     >
-                      {/* Level 2 inside catalog: categories ↔ models */}
                       <div className="menu-drill">
                         <div
                           className={cn(
@@ -635,11 +769,18 @@ export function Header() {
 
       {/* Tablet / Desktop */}
       <header className="pointer-events-none fixed inset-x-0 top-0 z-50 hidden md:block">
-        <div className="edge-chrome-md flex w-full items-start justify-between gap-3 pt-[max(1.25rem,var(--safe-top))] lg:gap-4 lg:pt-[max(1.5rem,var(--safe-top))]">
+        <div className="edge-chrome-md flex w-full items-start justify-between gap-3 pt-[var(--header-chrome-top)] lg:gap-4">
           <Link
+            ref={logoDeskRef}
             to="/"
-            onClick={closeAll}
-            className="chip-logo chip-shell pointer-events-auto inline-flex h-[3.75rem] w-[9.75rem] shrink-0 items-center gap-3 bg-white px-4 shadow-frame"
+            onClick={(e) => {
+              closeAll();
+              if (location.pathname === "/") {
+                e.preventDefault();
+                window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
+              }
+            }}
+            className="chip-logo chip-shell pointer-events-auto inline-flex h-[var(--header-chip-h)] w-[var(--header-logo-w)] shrink-0 items-center gap-3 bg-white px-4 shadow-frame"
           >
             <BrandMark className="h-9 w-9" />
             <span className="font-display text-lg font-bold uppercase tracking-tight text-ink">
@@ -650,96 +791,105 @@ export function Header() {
           <div
             ref={panelRef}
             className={cn(
-              "chip-menu chip-shell pointer-events-auto relative max-w-[min(100%,calc(100%-10.5rem))] overflow-hidden bg-white shadow-frame",
+              "chip-menu chip-shell menu-width-tween pointer-events-auto relative ml-auto flex max-w-[calc(100%-10.5rem)] flex-col overflow-hidden bg-white shadow-frame",
               (deskOpen || deskNav.mounted || deskCat.mounted) && "is-busy",
+              deskCat.mounted && "is-catalog-open",
             )}
+            style={{
+              width:
+                deskNav.visible && deskBarWidth != null
+                  ? deskBarWidth
+                  : DESK_TOGGLE_CLOSED,
+            }}
           >
-            <div className="flex h-[3.75rem] w-fit max-w-full">
-              <div
+            <div className="flex h-[var(--header-chip-h)] w-full min-w-0 shrink-0">
+              <nav
                 className={cn(
-                  "motion-expand-x min-w-0 overflow-hidden",
-                  deskNav.visible && "is-open",
+                  "flex h-[var(--header-chip-h)] items-center gap-0.5 overflow-hidden md:gap-0 lg:gap-0.5",
+                  deskNav.visible
+                    ? "min-w-0 flex-1 pl-2 pr-1"
+                    : "w-0 min-w-0 flex-none p-0",
                 )}
+                aria-hidden={!deskNav.visible}
               >
-                <div className="motion-expand-clip">
-                  <nav
-                    className="flex h-[3.75rem] w-max items-center gap-0.5 overflow-x-auto overscroll-x-contain pl-2 pr-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden md:gap-0 lg:gap-0.5"
-                    aria-hidden={!deskNav.visible}
+                <button
+                  type="button"
+                  tabIndex={deskNav.visible ? 0 : -1}
+                  className={cn(
+                    "inline-flex shrink-0 items-center gap-1.5 px-2 py-2 text-[11px] font-semibold uppercase tracking-[0.1em] transition-colors duration-180 ease-out lg:px-2.5 lg:text-[12px]",
+                    catalogOpen
+                      ? "bg-brand text-white"
+                      : "text-ink hover:bg-canvas-soft hover:text-accent",
+                  )}
+                  aria-expanded={catalogOpen}
+                  onClick={() => {
+                    if (!deskOpen) {
+                      prepareDeskOpenWidth();
+                      setDeskOpen(true);
+                    }
+                    if (!catalogOpen && deskBarWidth == null) prepareDeskOpenWidth();
+                    setCatalogOpen((v) => !v);
+                  }}
+                >
+                  <LayoutGrid className="h-3.5 w-3.5" />
+                  Каталог
+                  <ChevronDown
+                    className={cn(
+                      "h-3.5 w-3.5 transition-transform duration-280 ease-out",
+                      catalogOpen && "rotate-180",
+                    )}
+                  />
+                </button>
+
+                {otherNav.map((item) => (
+                  <NavLink
+                    key={item.href}
+                    to={item.href}
+                    tabIndex={deskNav.visible ? 0 : -1}
+                    onClick={closeAll}
+                    className={({ isActive }) =>
+                      cn(
+                        "shrink-0 px-2 py-2 text-[11px] font-semibold uppercase tracking-[0.1em] text-ink-muted transition-colors duration-180 ease-out hover:bg-canvas-soft hover:text-ink lg:px-2.5 lg:text-[12px]",
+                        isActive && "text-ink",
+                      )
+                    }
                   >
-                    <button
-                      type="button"
-                      tabIndex={deskNav.visible ? 0 : -1}
-                      className={cn(
-                        "inline-flex shrink-0 items-center gap-1.5 px-2 py-2 text-[11px] font-semibold uppercase tracking-[0.1em] transition-colors duration-180 ease-out lg:px-2.5 lg:text-[12px]",
-                        catalogOpen
-                          ? "bg-brand text-white"
-                          : "text-ink hover:bg-canvas-soft hover:text-accent",
-                      )}
-                      aria-expanded={catalogOpen}
-                      onClick={() => {
-                        if (!deskOpen) setDeskOpen(true);
-                        setCatalogOpen((v) => !v);
-                      }}
-                    >
-                      <LayoutGrid className="h-3.5 w-3.5" />
-                      Каталог
-                      <ChevronDown
-                        className={cn(
-                          "h-3.5 w-3.5 transition-transform duration-280 ease-out",
-                          catalogOpen && "rotate-180",
-                        )}
-                      />
-                    </button>
+                    {item.label}
+                  </NavLink>
+                ))}
 
-                    {otherNav.map((item) => (
-                      <NavLink
-                        key={item.href}
-                        to={item.href}
-                        tabIndex={deskNav.visible ? 0 : -1}
-                        onClick={closeAll}
-                        className={({ isActive }) =>
-                          cn(
-                            "shrink-0 px-2 py-2 text-[11px] font-semibold uppercase tracking-[0.1em] text-ink-muted transition-colors duration-180 ease-out hover:bg-canvas-soft hover:text-ink lg:px-2.5 lg:text-[12px]",
-                            isActive && "text-ink",
-                          )
-                        }
-                      >
-                        {item.label}
-                      </NavLink>
-                    ))}
-
-                    <Link
-                      to="/contacts?type=quote"
-                      tabIndex={deskNav.visible ? 0 : -1}
-                      onClick={closeAll}
-                      className="ml-1 shrink-0 bg-brand px-2.5 py-2 text-[10px] font-semibold uppercase tracking-[0.1em] text-white transition-colors duration-180 ease-out hover:bg-accent-hover lg:px-3 lg:text-[11px]"
-                    >
-                      Получить КП
-                    </Link>
-                  </nav>
-                </div>
-              </div>
+                <Link
+                  to="/contacts?type=quote#lead"
+                  tabIndex={deskNav.visible ? 0 : -1}
+                  onClick={closeAll}
+                  className="ml-1 shrink-0 bg-brand px-2.5 py-2 text-[10px] font-semibold uppercase tracking-[0.1em] text-white transition-colors duration-180 ease-out hover:bg-accent-hover lg:px-3 lg:text-[11px]"
+                >
+                  Получить КП
+                </Link>
+              </nav>
 
               <button
                 ref={deskToggleRef}
                 type="button"
-                className="menu-width-tween relative flex h-[3.75rem] shrink-0 items-center justify-center overflow-hidden font-display font-bold uppercase text-ink"
+                className="menu-width-tween relative flex h-[var(--header-chip-h)] shrink-0 items-center justify-center overflow-hidden font-display font-bold uppercase text-ink"
                 style={{
-                  width: deskNav.visible ? "3.75rem" : "9.75rem",
+                  width: deskNav.visible ? DESK_TOGGLE_OPEN : DESK_TOGGLE_CLOSED,
                 }}
                 aria-label={deskOpen ? "Закрыть меню" : "Открыть меню"}
                 aria-expanded={deskOpen}
                 onClick={() => {
                   if (deskOpen) {
+                    setCatalogOpen(false);
                     closeMenus();
                   } else {
+                    prepareDeskOpenWidth();
                     setDeskOpen(true);
                   }
                 }}
               >
                 <span
                   className={cn(
-                    "menu-toggle-label pl-[0.35rem] text-lg tracking-tight",
+                    "menu-toggle-label menu-toggle-label-desk pl-[0.35rem] text-lg tracking-tight",
                     deskNav.visible && "is-hidden",
                   )}
                 >
@@ -747,7 +897,7 @@ export function Header() {
                 </span>
                 <span
                   className={cn(
-                    "menu-toggle-label absolute inset-0 flex items-center justify-center",
+                    "menu-toggle-label menu-toggle-label-desk absolute inset-0 flex items-center justify-center",
                     !deskNav.visible && "is-hidden",
                   )}
                   aria-hidden={!deskNav.visible}
@@ -757,13 +907,12 @@ export function Header() {
               </button>
             </div>
 
-            <div className={cn("motion-expand-y", deskCat.visible && "is-open")}>
+            <div
+              className={cn("motion-expand-y", deskCat.visible && "is-open")}
+              aria-hidden={!deskCat.visible}
+            >
               <div className="motion-expand-clip">
-                {deskCat.mounted ? (
-                  <div className="border-t border-line px-3 pb-3 pt-3">
-                    {deskCatalogPanel}
-                  </div>
-                ) : null}
+                {deskCat.mounted ? deskCatalogPanel : null}
               </div>
             </div>
           </div>

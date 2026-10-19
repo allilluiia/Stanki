@@ -25,11 +25,11 @@ export function ContactsPage() {
     <div className="container-page page-start">
       <h1 className="section-title">Контакты</h1>
       <p className="section-lead">
-        Укажите организацию, задачу и модель — ответим коммерческим предложением
+        Укажите организацию, задачу и модель - ответим коммерческим предложением
         на указанный email.
       </p>
 
-      <div className="stack-after-lead grid gap-8 lg:grid-cols-[0.85fr_1.15fr] lg:items-start">
+      <div className="stack-after-lead grid gap-10 lg:grid-cols-[0.85fr_1.15fr] lg:items-start lg:gap-12">
         <div className="space-y-3 sm:space-y-4">
           {hasEmail() ? (
             <a
@@ -112,12 +112,14 @@ export function ContactsPage() {
           </div>
         </div>
 
-        <LeadForm
-          key={`${type}-${machine?.slug ?? "general"}`}
-          type={type}
-          machineSlug={machine?.slug}
-          machineModel={machine?.model}
-        />
+        <div id="lead" className="scroll-mt-[calc(var(--header-offset)+1rem)]">
+          <LeadForm
+            key={`${type}-${machine?.slug ?? "general"}`}
+            type={type}
+            machineSlug={machine?.slug}
+            machineModel={machine?.model}
+          />
+        </div>
       </div>
     </div>
   );

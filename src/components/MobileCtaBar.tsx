@@ -34,7 +34,7 @@ export function MobileCtaBar() {
           </a>
         ) : null}
         <Link
-          to="/contacts?type=quote"
+          to="/contacts?type=quote#lead"
           className="inline-flex min-h-11 items-center justify-center bg-brand px-2 text-center text-xs font-semibold uppercase tracking-wide text-white transition-colors duration-200 ease-soft hover:bg-accent-hover"
         >
           Получить КП

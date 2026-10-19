@@ -9,7 +9,7 @@ interface LeadFormProps {
   type?: LeadType;
   machineSlug?: string;
   machineModel?: string;
-  /** Free-form context (e.g. selected task / category title) — not a machine model */
+  /** Free-form context (e.g. selected task / category title) - not a machine model */
   context?: string;
   categoryId?: string;
   title?: string;
@@ -200,17 +200,17 @@ export function LeadForm({
       ) : null}
 
       <form onSubmit={handleSubmit} className="mt-7 space-y-5" noValidate>
-        {/* Honeypot */}
-        <div className="absolute -left-[9999px] opacity-0" aria-hidden="true">
-          <label htmlFor={`${uid}-website`}>Website</label>
-          <input
-            id={`${uid}-website`}
-            tabIndex={-1}
-            autoComplete="off"
-            value={honeypot}
-            onChange={(e) => setHoneypot(e.target.value)}
-          />
-        </div>
+        {/* Honeypot - out of a11y tree; bots may still fill name=website */}
+        <input
+          name="website"
+          type="text"
+          tabIndex={-1}
+          autoComplete="off"
+          value={honeypot}
+          onChange={(e) => setHoneypot(e.target.value)}
+          hidden
+          aria-hidden="true"
+        />
 
         <div className={cn("grid gap-4", !compact && "sm:grid-cols-2")}>
           <div>

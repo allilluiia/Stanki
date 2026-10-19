@@ -18,6 +18,7 @@
   --c-brand: #172229;
   --c-line: #ccd3d6;
   --c-line-soft: #e0e5e7;
+  --c-line-strong: #b5bfc3;
   --c-accent: #718b98;
   --c-hover: #607d8b;
   --c-logo: #c83a2d;
@@ -78,6 +79,19 @@
   --edge-pad-md: max(var(--space-6), var(--safe-left));
   --edge-pad-md-right: max(var(--space-6), var(--safe-right));
   --header-offset: calc(4.5rem + var(--safe-top));
+  --header-chrome-top: max(0.75rem, var(--safe-top));
+  --header-chip-h: 3rem;
+  --header-logo-w: auto;
+  --header-menu-w: 4.75rem;
+  /* Matches mobile header `gap-3`; live chip widths from Header.tsx */
+  --header-gap: 0.75rem;
+  --jump-inset-left: calc(
+    var(--edge-pad) + var(--header-logo-live-w, 7.25rem) + var(--header-gap)
+  );
+  --jump-inset-right: calc(
+    var(--edge-pad-right) + var(--header-menu-live-w, var(--header-menu-w)) +
+      var(--header-gap)
+  );
 }
 
 @media (min-width: 640px) {
@@ -91,9 +105,23 @@
 @media (min-width: 768px) {
   :root {
     --container-pad: var(--space-6); /* 24 */
-    --header-offset: calc(5.25rem + var(--safe-top));
+    --header-chrome-top: max(1.25rem, var(--safe-top));
+    --header-chip-h: 3.75rem;
+    --header-logo-w: 9.75rem;
+    --header-menu-w: 9.75rem;
+    --header-gap: 0.75rem;
+    --header-offset: calc(
+      var(--header-chrome-top) + var(--header-chip-h) + 0.5rem
+    );
     --edge-pad-md: max(var(--space-8), var(--safe-left));
     --edge-pad-md-right: max(var(--space-8), var(--safe-right));
+  }
+}
+
+@media (min-width: 1024px) {
+  :root {
+    --header-chrome-top: max(1.5rem, var(--safe-top));
+    --header-gap: 1rem;
   }
 }
 
@@ -183,6 +211,18 @@
     padding-inline: var(--container-pad);
   }
 
+  @media (min-width: 768px) {
+    .container-page {
+      padding-inline: max(var(--space-6), var(--safe-left), var(--safe-right));
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .container-page {
+      padding-inline: max(var(--space-8), var(--safe-left), var(--safe-right));
+    }
+  }
+
   .container-narrow {
     @apply mx-auto w-full max-w-3xl;
   }
@@ -210,9 +250,15 @@
     }
   }
 
-  /* After page lead → first content block: 40px */
+  /* After page lead → first content block */
   .stack-after-lead {
-    margin-top: var(--space-10);
+    margin-top: var(--space-12);
+  }
+
+  @media (min-width: 1024px) {
+    .stack-after-lead {
+      margin-top: var(--space-16);
+    }
   }
 
   /* Title → content within a section: 24–32 */
@@ -315,8 +361,8 @@
   }
 
   .section-lead {
-    margin-top: var(--space-4);
-    max-width: 38rem;
+    margin-top: var(--space-5);
+    max-width: 40rem;
     font-size: var(--text-base);
     line-height: var(--leading-body);
     color: var(--c-muted);
@@ -452,30 +498,42 @@
   }
 
   .page-start {
-    padding-top: calc(var(--header-offset) + var(--space-10));
-    padding-bottom: var(--space-16);
+    padding-top: calc(var(--header-offset) + var(--space-12));
+    padding-bottom: var(--space-20);
   }
 
   @media (min-width: 640px) {
-    .page-start {
-      padding-top: calc(var(--header-offset) + var(--space-12));
-      padding-bottom: var(--space-20);
-    }
-  }
-
-  @media (min-width: 1024px) {
     .page-start {
       padding-top: calc(var(--header-offset) + var(--space-16));
       padding-bottom: var(--space-24);
     }
   }
 
+  @media (min-width: 1024px) {
+    .page-start {
+      padding-top: calc(var(--header-offset) + var(--space-20));
+      padding-bottom: var(--space-30);
+    }
+  }
+
   .media-frame {
     position: relative;
     overflow: hidden;
-    border: 1px solid var(--c-line);
-    background: linear-gradient(165deg, #cdd7dc 0%, #e8edf0 42%, #fafaf8 100%);
+    border: 1px solid #5f727c;
+    background: linear-gradient(165deg, #4a5c66 0%, #667a85 42%, #8a9aa3 100%);
     border-radius: var(--radius);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.12),
+      0 14px 32px rgba(23, 32, 39, 0.18);
+  }
+
+  /* Light product PNGs: punch detail against cool steel frame */
+  .machine-hero-img {
+    filter:
+      contrast(1.32)
+      saturate(1.2)
+      brightness(0.88)
+      drop-shadow(0 16px 24px rgba(23, 32, 39, 0.35));
   }
 
   .eyebrow {
@@ -513,7 +571,7 @@
     display: grid;
     grid-template-columns: 0fr;
     min-width: 0;
-    transition: grid-template-columns var(--dur-expand-x) var(--ease-out);
+    transition: grid-template-columns var(--dur-expand-x) var(--ease-soft);
   }
 
   .motion-expand-x.is-open {
@@ -524,7 +582,7 @@
     display: grid;
     grid-template-rows: 0fr;
     width: 100%;
-    transition: grid-template-rows var(--dur-expand-y) var(--ease-out);
+    transition: grid-template-rows var(--dur-expand-y) var(--ease-soft);
   }
 
   .motion-expand-y.is-open {
@@ -537,11 +595,258 @@
     overflow: hidden;
   }
 
+  /* Catalog jump: top-left + top-right, fills logo↔menu band with air */
+  .catalog-jump {
+    display: flex;
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    height: 100%;
+    align-items: center;
+    overflow: hidden;
+    background: #fff;
+    box-shadow: 8px 8px 0 0 rgba(23, 32, 39, 0.08);
+    clip-path: polygon(
+      14px 0,
+      calc(100% - 14px) 0,
+      100% 14px,
+      100% 100%,
+      0 100%,
+      0 14px
+    );
+    padding-inline: 0.4rem;
+  }
+
+  @media (min-width: 768px) {
+    .catalog-jump {
+      padding-inline: 0.85rem;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .catalog-jump {
+      padding-inline: 1.15rem;
+    }
+  }
+
+  .catalog-jump-list {
+    display: flex;
+    width: 100%;
+    max-width: 100%;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 0.25rem;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  @media (min-width: 768px) {
+    .catalog-jump-list {
+      justify-content: space-between;
+      gap: 0.35rem;
+    }
+  }
+
+  .catalog-jump-list::-webkit-scrollbar {
+    display: none;
+  }
+
+  .catalog-jump-item {
+    padding-inline: 0.7rem;
+    padding-block: 0.5rem;
+    white-space: nowrap;
+  }
+
+  @media (min-width: 768px) {
+    .catalog-jump-item {
+      padding-inline: 0.85rem;
+      padding-block: 0.55rem;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .catalog-jump-item {
+      padding-inline: 1.1rem;
+      padding-block: 0.6rem;
+    }
+  }
+
+  /*
+   * Active pill chamfers:
+   * row (menu closed): first = TL, last = TR
+   * 2×3 (menu open): first = TL, second (top-right cell) = TR; else square
+   */
+  .catalog-jump-item.is-active.is-edge-start {
+    clip-path: polygon(10px 0, 100% 0, 100% 100%, 0 100%, 0 10px);
+  }
+
+  .catalog-jump-item.is-active.is-edge-end {
+    clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%);
+  }
+
+  @media (min-width: 768px) {
+    /* 2×3 chamfers only in pinned+open grid */
+    html.is-desk-nav-open .catalog-jump-track.is-pinned .catalog-jump-item.is-active.is-edge-end {
+      clip-path: none;
+    }
+
+    html.is-desk-nav-open
+      .catalog-jump-track.is-pinned
+      .catalog-jump-item.is-active.is-edge-col-end {
+      clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%);
+    }
+  }
+
+  /* Slot keeps layout height; track is the visible chip */
+  .catalog-jump-slot {
+    height: auto;
+    min-height: var(--header-chip-h);
+  }
+
+  .catalog-jump-track {
+    display: flex;
+    height: auto;
+    min-height: var(--header-chip-h);
+    width: 100%;
+    min-width: 0;
+    align-items: center;
+    transition: opacity 140ms var(--ease-soft);
+  }
+
+  .catalog-jump-track.is-swap {
+    opacity: 0;
+  }
+
+  /*
+   * All viewports: sit in the logo ↔ menu gap; items scroll inside.
+   * Pinned uses the same insets as in-flow → seamless dock.
+   */
+  .catalog-jump-track:not(.is-pinned) {
+    box-sizing: border-box;
+    width: calc(100vw - var(--jump-inset-left) - var(--jump-inset-right));
+    max-width: calc(100vw - var(--jump-inset-left) - var(--jump-inset-right));
+    margin-left: calc(50% - 50vw + var(--jump-inset-left));
+    padding: 0;
+  }
+
+  .catalog-jump-track.is-pinned {
+    position: fixed;
+    top: var(--header-chrome-top);
+    left: var(--jump-inset-left);
+    right: var(--jump-inset-right);
+    z-index: 40;
+    width: auto;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* Mobile menu open eats the gap — hide pinned jump */
+  html.is-mobile-nav-open .catalog-jump-track.is-pinned {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  @media (min-width: 768px) {
+    .catalog-jump-slot {
+      height: var(--header-chip-h);
+      min-height: 0;
+    }
+
+    .catalog-jump-track {
+      height: var(--header-chip-h);
+      min-height: 0;
+    }
+
+    :root {
+      --jump-inset-left: calc(
+        var(--edge-pad-md) + var(--header-logo-live-w, var(--header-logo-w)) +
+          var(--header-gap)
+      );
+      --jump-inset-right: calc(
+        var(--edge-pad-md-right) + var(--header-menu-w) + var(--header-gap)
+      );
+      --jump-inset-right-open: calc(
+        var(--edge-pad-md-right) + var(--header-menu-live-w, var(--header-menu-w)) +
+          var(--header-gap)
+      );
+    }
+
+    /*
+     * Menu open + in-flow (under title): full-width single row.
+     * Menu open + pinned: 2×3 in live menu band (layout swap faded in JS).
+     */
+    html.is-desk-nav-open .catalog-jump-track:not(.is-pinned) {
+      width: 100%;
+      max-width: 100%;
+      margin-left: 0;
+      padding: 0;
+    }
+
+    html.is-desk-nav-open .catalog-jump-track.is-pinned {
+      left: var(--jump-inset-left);
+      right: var(--jump-inset-right-open);
+      height: auto;
+      min-height: var(--header-chip-h);
+      align-items: stretch;
+    }
+
+    html.is-desk-nav-open .catalog-jump-track.is-pinned .catalog-jump {
+      height: auto;
+      min-height: var(--header-chip-h);
+      align-items: stretch;
+      padding-block: 0.55rem;
+    }
+
+    html.is-desk-nav-open .catalog-jump-track.is-pinned .catalog-jump-list {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      align-items: stretch;
+      justify-content: stretch;
+      gap: 0.35rem;
+      overflow: visible;
+    }
+
+    html.is-desk-nav-open .catalog-jump-track.is-pinned .catalog-jump-item {
+      padding-inline: 0.7rem;
+      padding-block: 0.5rem;
+    }
+  }
+
+
+  /* Category drill: compact, content-sized — no inner scroll */
+  .menu-drill-sheet {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .menu-drill-sheet-body {
+    overflow: hidden;
+  }
+
+  .menu-drill-sheet-footer {
+    display: grid;
+    flex-shrink: 0;
+    gap: 0.35rem;
+    border-top: 1px solid var(--c-line);
+    background: var(--c-surface);
+    padding: 0.75rem;
+  }
+
   /* Stable icon/label crossfade — no remount flash */
   .menu-toggle-label {
     transition:
       opacity var(--dur-micro) var(--ease-out),
       visibility var(--dur-micro) var(--ease-out);
+  }
+
+  /* Desk chip width tween is longer — keep label in sync */
+  .menu-toggle-label-desk {
+    transition:
+      opacity var(--dur-expand-x) var(--ease-soft),
+      visibility var(--dur-expand-x) var(--ease-soft);
   }
 
   .menu-toggle-label.is-hidden {
@@ -565,9 +870,9 @@
   .menu-drill-pane.is-back,
   .menu-drill-pane.is-forward {
     position: absolute;
-    inset-inline: 0;
-    top: 0;
+    inset: 0;
     width: 100%;
+    overflow: hidden;
     pointer-events: none;
   }
 
@@ -589,15 +894,20 @@
     box-shadow: 10px 10px 0 0 rgba(23, 32, 39, 0.1);
   }
 
-  /* Avoid shadow tween fighting open/close motion */
+  /* Freeze shadow while open — do NOT kill width tweens (is-busy used to set transition:none) */
   .chip-shell.is-busy,
   .chip-shell.is-busy:hover {
-    transition: none;
     box-shadow: 8px 8px 0 0 rgba(23, 32, 39, 0.08);
   }
 
   .menu-width-tween {
-    transition: width var(--dur-expand-x) var(--ease-out);
+    transition: width var(--dur-expand-x) var(--ease-soft);
+  }
+
+  .chip-shell.is-busy.menu-width-tween,
+  .chip-shell.is-busy.menu-width-tween:hover {
+    transition: width var(--dur-expand-x) var(--ease-soft);
+    box-shadow: 8px 8px 0 0 rgba(23, 32, 39, 0.08);
   }
 
   .link-quiet {
@@ -684,12 +994,26 @@
     clip-path: polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 0 100%);
   }
 
+  /* Closed / open nav: top-left chamfer only */
   .chip-menu {
     clip-path: polygon(14px 0, 100% 0, 100% 100%, 0 100%, 0 14px);
   }
 
+  /* Catalog open (mobile + desk): top-left + bottom-right */
+  .chip-menu.is-catalog-open {
+    clip-path: polygon(
+      14px 0,
+      100% 0,
+      100% calc(100% - 14px),
+      calc(100% - 14px) 100%,
+      0 100%,
+      0 14px
+    );
+  }
+
+  /* backwards only — do not leave a transform on <main> (breaks position:fixed) */
   .page-enter {
-    animation: fadeUp var(--dur-enter) var(--ease-out) both;
+    animation: fadeUp var(--dur-enter) var(--ease-out) backwards;
   }
 }
 
@@ -700,7 +1024,7 @@
   }
   to {
     opacity: 1;
-    transform: translate3d(0, 0, 0);
+    transform: none;
   }
 }
 
@@ -724,7 +1048,8 @@
   .motion-expand-y,
   .menu-toggle-label,
   .menu-drill-pane,
-  .menu-width-tween {
+  .menu-width-tween,
+  .chip-menu.menu-width-tween {
     transition: none !important;
   }
 

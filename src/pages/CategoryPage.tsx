@@ -68,7 +68,7 @@ export function CategoryPage() {
                     </th>
                     {fields.map((field) => (
                       <td key={field.key} className="px-3 py-3 text-ink-soft sm:px-4">
-                        {m.compare[field.key] ?? "—"}
+                        {m.compare[field.key] ?? "-"}
                       </td>
                     ))}
                     <td className="px-3 py-3 sm:px-4">

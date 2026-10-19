@@ -11,7 +11,7 @@ import { cn } from "@/lib/utils";
 
 export function HomePage() {
   const featuredUnique = machines.filter((m) =>
-    ["szgh-46j", "szgh-46y", "vmc850", "szgh-36j"].includes(m.slug),
+    ["szgh-46j", "szgh-46y", "vmc850", "szgh-540"].includes(m.slug),
   );
 
   const heroPool = featuredUnique.length ? featuredUnique : machines.slice(0, 4);
@@ -22,21 +22,21 @@ export function HomePage() {
 
   return (
     <div className="w-full overflow-x-clip">
-      {/* —— Product hero —— */}
+      {/* -- Product hero -- */}
       <section className="relative chrome-bleed bg-stage">
         <div className="pointer-events-none absolute inset-0 tech-grid opacity-[0.35]" />
 
-        <div className="relative container-page pt-8 sm:pt-12 lg:pt-12">
+        <div className="relative container-page pt-10 sm:pt-14 lg:pt-16">
           {flagship ? (
             <>
-              <div className="flex flex-wrap items-end justify-between gap-4 border-b border-line/80 pb-6">
+              <div className="flex flex-wrap items-end justify-between gap-4 border-b border-line/80 pb-7 sm:pb-8">
                 <div className="min-w-0">
                   <h1 className="font-display text-[clamp(1.75rem,4vw,3rem)] font-semibold uppercase leading-[1.05] tracking-tight text-ink">
                     {flagship.model}
-                    <span className="text-ink-faint"> · </span>
+                    <span className="text-ink/55"> · </span>
                     <span className="text-mark">SZGH</span>
                   </h1>
-                  <p className="mt-2 text-sm leading-relaxed text-ink-muted sm:text-base">
+                  <p className="mt-2 max-w-xl text-sm font-medium leading-relaxed text-ink/90 sm:text-base">
                     {flagship.name}
                   </p>
                 </div>
@@ -51,7 +51,7 @@ export function HomePage() {
               </div>
 
               <div className="grid lg:grid-cols-[1fr_auto]">
-                <div className="relative min-h-[280px] py-8 sm:min-h-[360px] sm:py-10 lg:min-h-[440px]">
+                <div className="relative min-h-[300px] py-10 sm:min-h-[380px] sm:py-12 lg:min-h-[460px]">
                   <div className="absolute left-0 top-8 z-10 hidden max-w-[11rem] space-y-4 lg:block">
                     <div>
                       <div className="text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-faint">
@@ -85,7 +85,8 @@ export function HomePage() {
                       categoryId={flagship.categoryId}
                       media={flagship.media}
                       priority
-                      className="aspect-square animate-fade-in border-0 bg-transparent sm:aspect-[5/4]"
+                      hideCaption
+                      className="aspect-square animate-fade-in shadow-frame sm:aspect-[5/4]"
                     />
                   </Link>
                 </div>
@@ -109,7 +110,7 @@ export function HomePage() {
                 </div>
               </div>
 
-              <div className="flex flex-col gap-4 border-t border-line/80 py-6 sm:flex-row sm:items-center sm:justify-between sm:gap-8">
+              <div className="flex flex-col gap-5 border-t border-line/80 py-8 sm:flex-row sm:items-center sm:justify-between sm:gap-10 sm:py-10">
                 <p className="max-w-xl text-sm leading-relaxed text-ink-muted sm:text-base">
                   {siteConfig.description}
                 </p>
@@ -125,7 +126,7 @@ export function HomePage() {
         </div>
       </section>
 
-      {/* —— Mission —— */}
+      {/* -- Mission -- */}
       <section className="bg-surface">
         <div className="container-page section-y">
           <p className="max-w-3xl font-display text-[clamp(1.35rem,0.9rem+2vw,2.25rem)] font-medium leading-[1.3] tracking-tight text-ink">
@@ -135,13 +136,13 @@ export function HomePage() {
             <strong className="font-semibold">коммерческое предложение</strong> под задачу
             производства.
           </p>
-          <div className="mt-10 grid gap-px border border-line bg-line sm:grid-cols-3">
+          <div className="mt-12 grid gap-px border border-line bg-line sm:mt-14 sm:grid-cols-3">
             {[
               { t: "Каталог", d: `${machines.length} моделей в линейке` },
               { t: "Категории", d: `${categories.length} типов оборудования` },
               { t: "Заявка", d: "КП через форму на сайте" },
             ].map((item) => (
-              <div key={item.t} className="bg-surface p-6 transition-colors duration-180 ease-out hover:bg-canvas-soft sm:p-8">
+              <div key={item.t} className="bg-surface p-7 transition-colors duration-180 ease-out hover:bg-canvas-soft sm:p-9">
                 <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-accent">
                   {item.t}
                 </div>
@@ -154,7 +155,7 @@ export function HomePage() {
         </div>
       </section>
 
-      {/* —— Series —— */}
+      {/* -- Series -- */}
       <section className="bg-canvas">
         <div className="mx-auto grid max-w-page gap-px border border-line bg-line sm:grid-cols-2 lg:grid-cols-4">
           {series.map((cat) => {
@@ -162,7 +163,7 @@ export function HomePage() {
             return (
               <Link
                 key={cat.id}
-                to={`/catalog/${cat.slug}`}
+                to={`/catalog#${cat.slug}`}
                 className="group relative flex min-h-[240px] flex-col bg-surface p-6 transition-colors duration-180 ease-out hover:bg-canvas-soft lg:min-h-[280px] lg:p-8"
               >
                 <div className="font-display text-xl font-semibold uppercase tracking-tight text-ink transition-colors duration-300 ease-soft group-hover:text-accent sm:text-2xl">
@@ -200,7 +201,7 @@ export function HomePage() {
         </div>
       </section>
 
-      {/* —— Featured models —— */}
+      {/* -- Featured models -- */}
       <section className="bg-surface">
         <div className="container-page section-y">
           <div className="flex flex-wrap items-end justify-between gap-4">
@@ -223,7 +224,7 @@ export function HomePage() {
               </Link>
             </div>
           </div>
-          <div className="mt-8 grid gap-0 border border-line sm:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-10 grid gap-0 border border-line sm:mt-12 sm:grid-cols-2 lg:grid-cols-4">
             {featuredUnique.map((machine) => (
               <MachineCard key={machine.slug} machine={machine} dense />
             ))}
@@ -231,7 +232,7 @@ export function HomePage() {
         </div>
       </section>
 
-      {/* —— Solutions split —— */}
+      {/* -- Solutions split -- */}
       <section className="bg-stage">
         <div className="grid lg:grid-cols-2">
           <div className="relative min-h-[300px] overflow-hidden lg:min-h-[400px]">
@@ -251,7 +252,7 @@ export function HomePage() {
               Подберите станок под вашу задачу
             </h2>
             <p className="mt-4 max-w-md text-sm leading-relaxed text-surface-muted/70 sm:text-base">
-              Точение, фрезерование, VMC или портал — выберите направление, и мы покажем
+              Точение, фрезерование, VMC или портал - выберите направление, и мы покажем
               релевантные модели SZGH.
             </p>
             <Link to="/solutions" className="btn-arrow mt-8 self-start bg-surface-muted text-ink">
@@ -264,23 +265,25 @@ export function HomePage() {
         </div>
       </section>
 
-      {/* —— Consultation form —— */}
+      {/* -- Consultation form -- */}
       <section className="bg-canvas-soft">
         <div className="container-page section-y">
-          <div className="grid gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-start lg:gap-16">
+          <div className="grid gap-12 lg:grid-cols-[0.9fr_1.1fr] lg:items-start lg:gap-20">
             <div>
               <p className="eyebrow">Заявка</p>
               <h2 className="section-title mt-3">Получить коммерческое предложение</h2>
               <p className="section-lead">
-                Укажите организацию и задачу — ответим на email. Без выдуманных сроков и цен.
+                Укажите организацию и задачу - ответим на email. Без выдуманных сроков и цен.
               </p>
             </div>
-            <LeadForm type="quote" title="Запрос КП" />
+            <div id="lead-home" className="scroll-mt-[calc(var(--header-offset)+1rem)]">
+              <LeadForm type="quote" title="Запрос КП" />
+            </div>
           </div>
         </div>
       </section>
 
-      {/* —— Giant catalog band —— */}
+      {/* -- Giant catalog band -- */}
       <section className="relative overflow-hidden bg-stage py-16 text-center sm:py-20 lg:py-24">
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center overflow-hidden">
           <span className="select-none font-display text-[clamp(4rem,18vw,14rem)] font-bold uppercase leading-none tracking-tight text-ink/[0.07]">
