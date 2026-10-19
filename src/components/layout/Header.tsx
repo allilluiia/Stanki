@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef, useState, type FormEvent } from "react";
+import { useEffect, useId, useMemo, useRef, useState, type FormEvent } from "react";
 import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
   LayoutGrid,
@@ -44,6 +44,8 @@ export function Header() {
   const { menuOpen, setMenuOpen } = useMobileUi();
   const [deskOpen, setDeskOpen] = useState(false);
   const [catalogOpen, setCatalogOpen] = useState(false);
+  /** Mobile: drill into a category to list models (Abamet-style level 2) */
+  const [drillCatId, setDrillCatId] = useState<string | null>(null);
   const [query, setQuery] = useState("");
   const [activeCat, setActiveCat] = useState(categories[0]?.id ?? "turning");
   const location = useLocation();
@@ -53,29 +55,57 @@ export function Header() {
   const deskToggleRef = useRef<HTMLButtonElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const searchId = useId();
+  const deskSearchId = useId();
   const mobilePhase = usePhasedExpand(menuOpen, EXPAND_X_MS, EXPAND_Y_MS);
   const mobileCat = usePresence(catalogOpen, DRILL_MS);
+  const mobileDrill = usePresence(Boolean(drillCatId), DRILL_MS);
   const deskNav = usePresence(deskOpen, EXPAND_X_MS);
   const deskCat = usePresence(deskOpen && catalogOpen, EXPAND_Y_MS);
+
+  const drillCategory = useMemo(
+    () => categories.find((c) => c.id === drillCatId) ?? null,
+    [drillCatId],
+  );
+  const drillMachines = useMemo(
+    () => (drillCatId ? getMachinesByCategory(drillCatId) : []),
+    [drillCatId],
+  );
+  const deskMachines = useMemo(
+    () => getMachinesByCategory(activeCat),
+    [activeCat],
+  );
+  const deskActiveCategory = useMemo(
+    () => categories.find((c) => c.id === activeCat) ?? categories[0],
+    [activeCat],
+  );
 
   useEffect(() => {
     setMenuOpen(false);
     setDeskOpen(false);
     setCatalogOpen(false);
+    setDrillCatId(null);
   }, [location.pathname, location.search, setMenuOpen]);
 
-  /* Clear catalog only after chrome finishes closing — avoids mid-exit remount flash */
   useEffect(() => {
     if (menuOpen || deskOpen || mobilePhase.active || deskNav.mounted || mobileCat.mounted) {
       return;
     }
     setCatalogOpen(false);
+    setDrillCatId(null);
   }, [menuOpen, deskOpen, mobilePhase.active, deskNav.mounted, mobileCat.mounted]);
+
+  useEffect(() => {
+    if (!catalogOpen) setDrillCatId(null);
+  }, [catalogOpen]);
 
   useEffect(() => {
     if (!deskOpen && !menuOpen) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== "Escape") return;
+      if (drillCatId && menuOpen) {
+        setDrillCatId(null);
+        return;
+      }
       if (catalogOpen && (menuOpen || deskOpen)) {
         setCatalogOpen(false);
         return;
@@ -86,12 +116,11 @@ export function Header() {
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [deskOpen, menuOpen, catalogOpen, setMenuOpen]);
+  }, [deskOpen, menuOpen, catalogOpen, drillCatId, setMenuOpen]);
 
   useEffect(() => {
     if (!deskOpen && !menuOpen) return;
     let remove: (() => void) | undefined;
-    /* Attach after this frame so the opening click doesn't instantly close */
     const attachId = window.setTimeout(() => {
       function onPointer(e: MouseEvent) {
         const t = e.target as Node;
@@ -121,7 +150,7 @@ export function Header() {
     if (hits.length === 1) {
       navigate(`/machines/${hits[0].slug}`);
     } else {
-      navigate(`/docs?q=${encodeURIComponent(q)}`);
+      navigate(`/catalog?q=${encodeURIComponent(q)}`);
     }
   }
 
@@ -134,53 +163,29 @@ export function Header() {
     setMenuOpen(false);
     setDeskOpen(false);
     setCatalogOpen(false);
+    setDrillCatId(null);
   }
 
-  const categoryList = (
-    <ul className="p-2">
-      {categories.map((cat) => {
-        const count = getMachinesByCategory(cat.id).length;
-        const active = activeCat === cat.id;
-        return (
-          <li key={cat.id}>
-            <Link
-              to={`/catalog/${cat.slug}`}
-              onMouseEnter={() => setActiveCat(cat.id)}
-              onClick={closeAll}
-              className={cn(
-                "flex items-baseline justify-between gap-3 px-3 py-2.5 font-display text-sm font-semibold uppercase tracking-tight transition-colors duration-200 ease-soft sm:text-base",
-                active ? "bg-white text-accent" : "text-ink hover:bg-white hover:text-accent",
-              )}
-            >
-              <span>{cat.title}</span>
-              <span className="font-sans text-xs font-medium text-ink-faint">[{count}]</span>
-            </Link>
-          </li>
-        );
-      })}
-      <li>
-        <Link
-          to="/catalog"
-          onClick={closeAll}
-          className="flex items-center justify-between gap-3 px-3 py-2.5 text-sm font-semibold uppercase tracking-[0.1em] text-accent transition-colors duration-200 ease-soft hover:bg-white hover:text-ink"
-        >
-          Посмотреть все
-          <ArrowRight className="h-4 w-4 shrink-0" />
-        </Link>
-      </li>
-    </ul>
-  );
+  function mobileBack() {
+    if (drillCatId) {
+      setDrillCatId(null);
+      return;
+    }
+    if (catalogOpen) {
+      setCatalogOpen(false);
+    }
+  }
 
-  const catalogSearch = (
+  const catalogSearch = (id: string) => (
     <form onSubmit={submitSearch} className="flex border-b border-line bg-white">
-      <label className="sr-only" htmlFor={searchId}>
+      <label className="sr-only" htmlFor={id}>
         Поиск модели
       </label>
       <input
-        id={searchId}
+        id={id}
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        placeholder="Найти модель…"
+        placeholder="Искать модель…"
         className="min-w-0 flex-1 bg-transparent px-3 py-3 text-sm text-ink outline-none placeholder:text-ink-faint"
         autoComplete="off"
       />
@@ -213,11 +218,100 @@ export function Header() {
     </div>
   );
 
-  /** Desktop / tablet: full catalog block, no scroll */
+  /** Desktop mega: categories | models (Abamet-inspired, chip style) */
   const deskCatalogPanel = (
     <div className="border border-line bg-canvas-soft">
-      {catalogSearch}
-      {categoryList}
+      {catalogSearch(deskSearchId)}
+      <div className="grid sm:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
+        <ul className="border-b border-line sm:border-b-0 sm:border-r sm:border-line">
+          {categories.map((cat) => {
+            const count = getMachinesByCategory(cat.id).length;
+            const active = activeCat === cat.id;
+            return (
+              <li key={cat.id}>
+                <button
+                  type="button"
+                  onMouseEnter={() => setActiveCat(cat.id)}
+                  onFocus={() => setActiveCat(cat.id)}
+                  onClick={() => setActiveCat(cat.id)}
+                  className={cn(
+                    "flex w-full items-baseline justify-between gap-3 px-3 py-2.5 text-left font-display text-sm font-semibold uppercase tracking-tight transition-colors duration-180 ease-out sm:text-[15px]",
+                    active
+                      ? "bg-white text-accent"
+                      : "text-ink hover:bg-white hover:text-accent",
+                  )}
+                >
+                  <span>{cat.title}</span>
+                  <span className="font-sans text-xs font-medium text-ink-faint">
+                    [{count}]
+                  </span>
+                </button>
+              </li>
+            );
+          })}
+          <li>
+            <Link
+              to="/catalog"
+              onClick={closeAll}
+              className="flex items-center justify-between gap-3 px-3 py-2.5 text-sm font-semibold uppercase tracking-[0.1em] text-accent transition-colors duration-180 ease-out hover:bg-white hover:text-ink"
+            >
+              Весь каталог
+              <ArrowRight className="h-4 w-4 shrink-0" />
+            </Link>
+          </li>
+        </ul>
+
+        <div className="flex min-h-[14rem] flex-col bg-white">
+          <div className="border-b border-line-soft px-3 py-2.5">
+            <Link
+              to={`/catalog/${deskActiveCategory?.slug ?? ""}`}
+              onClick={closeAll}
+              className="font-display text-sm font-semibold uppercase tracking-tight text-ink transition-colors hover:text-accent"
+            >
+              {deskActiveCategory?.title}
+            </Link>
+            {deskActiveCategory?.description ? (
+              <p className="mt-1 text-xs leading-snug text-ink-faint">
+                {deskActiveCategory.description}
+              </p>
+            ) : null}
+          </div>
+          <ul className="flex-1 p-1">
+            {deskMachines.map((m) => (
+              <li key={m.slug}>
+                <Link
+                  to={`/machines/${m.slug}`}
+                  onClick={closeAll}
+                  className="flex items-center justify-between gap-2 px-3 py-2.5 transition-colors duration-180 ease-out hover:bg-canvas-soft"
+                >
+                  <span>
+                    <span className="block font-display text-sm font-semibold tracking-tight text-ink">
+                      {m.model}
+                    </span>
+                    <span className="mt-0.5 block text-xs text-ink-muted">
+                      {m.name}
+                    </span>
+                  </span>
+                  <ChevronRight className="h-4 w-4 shrink-0 text-ink-faint" />
+                </Link>
+              </li>
+            ))}
+            {deskMachines.length === 0 ? (
+              <li className="px-3 py-4 text-sm text-ink-faint">Нет моделей в категории</li>
+            ) : null}
+          </ul>
+          <div className="mt-auto border-t border-line-soft p-2">
+            <Link
+              to={`/catalog/${deskActiveCategory?.slug ?? ""}`}
+              onClick={closeAll}
+              className="flex min-h-10 items-center justify-between gap-2 px-2 text-xs font-semibold uppercase tracking-[0.1em] text-accent transition-colors hover:text-ink"
+            >
+              Все модели категории
+              <ArrowRight className="h-3.5 w-3.5" />
+            </Link>
+          </div>
+        </div>
+      </div>
       {catalogCta}
     </div>
   );
@@ -228,7 +322,10 @@ export function Header() {
         type="button"
         tabIndex={mobilePhase.tall && !mobileCat.visible ? 0 : -1}
         className="flex w-full min-h-11 items-center justify-between gap-2 border-b border-line-soft px-3 py-3 text-left font-display text-sm font-semibold uppercase tracking-tight text-ink transition-colors duration-180 ease-out hover:bg-canvas-soft active:bg-canvas-soft"
-        onClick={() => setCatalogOpen(true)}
+        onClick={() => {
+          setCatalogOpen(true);
+          setDrillCatId(null);
+        }}
       >
         <span className="inline-flex items-center gap-2">
           <LayoutGrid className="h-4 w-4 text-accent" />
@@ -287,13 +384,107 @@ export function Header() {
     </>
   );
 
-  const mobileCatalogNav = (
-    <div className="bg-canvas-soft">
-      {catalogSearch}
-      {categoryList}
+  const mobileCatalogRoot = (
+    <div className="bg-white">
+      {catalogSearch(searchId)}
+      <ul>
+        {categories.map((cat) => {
+          const count = getMachinesByCategory(cat.id).length;
+          return (
+            <li key={cat.id}>
+              <button
+                type="button"
+                tabIndex={mobileCat.visible && !mobileDrill.visible ? 0 : -1}
+                className="flex w-full min-h-11 items-center justify-between gap-2 border-b border-line-soft px-3 py-3 text-left transition-colors duration-180 ease-out hover:bg-canvas-soft"
+                onClick={() => setDrillCatId(cat.id)}
+              >
+                <span>
+                  <span className="block font-display text-sm font-semibold uppercase tracking-tight text-ink">
+                    {cat.title}
+                  </span>
+                  <span className="mt-0.5 block text-xs text-ink-faint">
+                    {count} {count === 1 ? "модель" : "модели"}
+                  </span>
+                </span>
+                <ChevronRight className="h-4 w-4 shrink-0 text-ink-muted" />
+              </button>
+            </li>
+          );
+        })}
+      </ul>
+      <Link
+        to="/catalog"
+        onClick={closeAll}
+        tabIndex={mobileCat.visible && !mobileDrill.visible ? 0 : -1}
+        className="flex min-h-11 items-center justify-between gap-2 border-b border-line-soft px-3 py-3 text-sm font-semibold uppercase tracking-[0.1em] text-accent"
+      >
+        Весь каталог
+        <ArrowRight className="h-4 w-4" />
+      </Link>
       {catalogCta}
     </div>
   );
+
+  const mobileCatalogDrill = drillCategory ? (
+    <div className="bg-white">
+      <Link
+        to={`/catalog/${drillCategory.slug}`}
+        onClick={closeAll}
+        tabIndex={mobileDrill.visible ? 0 : -1}
+        className="block border-b border-line bg-canvas-soft px-3 py-3"
+      >
+        <span className="font-display text-sm font-semibold uppercase tracking-tight text-ink">
+          {drillCategory.title}
+        </span>
+        {drillCategory.description ? (
+          <span className="mt-1 block text-xs leading-snug text-ink-muted">
+            {drillCategory.description}
+          </span>
+        ) : null}
+      </Link>
+      <ul>
+        {drillMachines.map((m) => (
+          <li key={m.slug}>
+            <Link
+              to={`/machines/${m.slug}`}
+              onClick={closeAll}
+              tabIndex={mobileDrill.visible ? 0 : -1}
+              className="flex min-h-11 items-center justify-between gap-2 border-b border-line-soft px-3 py-3 transition-colors hover:bg-canvas-soft"
+            >
+              <span>
+                <span className="block font-display text-sm font-semibold tracking-tight text-ink">
+                  {m.model}
+                </span>
+                <span className="mt-0.5 block text-xs text-ink-muted">{m.name}</span>
+              </span>
+              <ChevronRight className="h-4 w-4 shrink-0 text-ink-faint" />
+            </Link>
+          </li>
+        ))}
+      </ul>
+      <div className="space-y-2 p-3">
+        <Link
+          to={`/catalog/${drillCategory.slug}`}
+          onClick={closeAll}
+          tabIndex={mobileDrill.visible ? 0 : -1}
+          className="btn-secondary w-full"
+        >
+          Все модели категории
+        </Link>
+        <Link
+          to={`/contacts?type=quote`}
+          onClick={closeAll}
+          tabIndex={mobileDrill.visible ? 0 : -1}
+          className="btn-primary w-full"
+        >
+          Получить КП
+        </Link>
+      </div>
+    </div>
+  ) : null;
+
+  const showMobileBack = menuOpen && mobilePhase.wide && mobileCat.visible;
+  const mobileBackLabel = drillCatId ? "Каталог" : "Меню";
 
   return (
     <>
@@ -301,7 +492,7 @@ export function Header() {
         Перейти к содержимому
       </a>
 
-      {/* Mobile — widen, then expand down; drill panes crossfade */}
+      {/* Mobile */}
       <div className="pointer-events-none fixed inset-x-0 top-0 z-50 flex items-start justify-between gap-3 edge-chrome pt-[max(0.75rem,var(--safe-top))] md:hidden">
         <Link
           to="/"
@@ -329,16 +520,16 @@ export function Header() {
             <div className="relative min-w-0 flex-1 overflow-hidden">
               <button
                 type="button"
-                tabIndex={menuOpen && mobilePhase.wide && mobileCat.visible ? 0 : -1}
-                aria-hidden={!(menuOpen && mobilePhase.wide && mobileCat.visible)}
+                tabIndex={showMobileBack ? 0 : -1}
+                aria-hidden={!showMobileBack}
                 className={cn(
                   "menu-toggle-label absolute inset-y-0 left-0 inline-flex items-center gap-1 px-3 text-xs font-semibold uppercase tracking-[0.08em] text-ink",
-                  !(menuOpen && mobilePhase.wide && mobileCat.visible) && "is-hidden",
+                  !showMobileBack && "is-hidden",
                 )}
-                onClick={() => setCatalogOpen(false)}
+                onClick={mobileBack}
               >
                 <ChevronLeft className="h-4 w-4 shrink-0" />
-                Меню
+                {mobileBackLabel}
               </button>
             </div>
 
@@ -360,6 +551,7 @@ export function Header() {
                 } else {
                   setMenuOpen(true);
                   setCatalogOpen(false);
+                  setDrillCatId(null);
                 }
               }}
             >
@@ -400,6 +592,7 @@ export function Header() {
                   >
                     {mobileMainNav}
                   </div>
+
                   {mobileCat.mounted ? (
                     <div
                       className={cn(
@@ -408,7 +601,29 @@ export function Header() {
                       )}
                       aria-hidden={!mobileCat.visible}
                     >
-                      {mobileCatalogNav}
+                      {/* Level 2 inside catalog: categories ↔ models */}
+                      <div className="menu-drill">
+                        <div
+                          className={cn(
+                            "menu-drill-pane bg-white",
+                            mobileDrill.visible && "is-back",
+                          )}
+                          aria-hidden={mobileDrill.visible}
+                        >
+                          {mobileCatalogRoot}
+                        </div>
+                        {mobileDrill.mounted ? (
+                          <div
+                            className={cn(
+                              "menu-drill-pane bg-white",
+                              !mobileDrill.visible && "is-forward",
+                            )}
+                            aria-hidden={!mobileDrill.visible}
+                          >
+                            {mobileCatalogDrill}
+                          </div>
+                        ) : null}
+                      </div>
                     </div>
                   ) : null}
                 </nav>
